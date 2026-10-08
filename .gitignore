@@ -1,0 +1,59 @@
+# === Virtual Environments ===
+.venv/
+venv/
+env/
+ENV/
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+build/
+dist/
+
+# === Environment Variables & Secrets ===
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# === IDE / Editors ===
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# === Testing & Coverage ===
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# === Type Checking & Linting ===
+.mypy_cache/
+.ruff_cache/
+.pyright/
+
+# === Jupyter ===
+.ipynb_checkpoints/
+
+# === Operating Systems ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === Logs & Temporary Files ===
+*.log
+*.tmp
+*.temp
+*.bak
+
+# === Local Data ===
+*.sqlite3
+*.db
