@@ -1,0 +1,8 @@
+#input_straight_number{
+    display:none;
+}
+
+Select, Input {
+    width: 60;
+    margin: 2;
+}
