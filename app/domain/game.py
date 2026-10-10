@@ -14,16 +14,18 @@ class Game():
     def place_bet(self, bet: Bet):
         if self.current_bet is not None:
             raise ValueError("Bet already placed")
+        
         validate_bet(bet)
         self.player.debit(bet.amount)
         self.current_bet = bet
 
     def spin(self) -> tuple[Pocket, int]:
-        spin_result = self.wheel.spin()
-        amount_won = 0
         if self.current_bet is None:
             raise ValueError("No active bet")
         
+        spin_result = self.wheel.spin()
+        amount_won = 0
+
         if resolve_bet(spin_result, self.current_bet):
             amount_won = calculate_payout(self.current_bet, True)
             self.player.credit(amount_won)
