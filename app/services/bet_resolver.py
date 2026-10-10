@@ -1,6 +1,14 @@
 from domain.bet import Bet, BetType
 from domain.wheel import Pocket, PocketColor
 
+PAYOUT_MULTIPLIERS = {
+    BetType.STRAIGHT: 36,
+    BetType.RED: 2,
+    BetType.BLACK: 2,
+    BetType.EVEN: 2,
+    BetType.ODD: 2,
+}
+
 def is_even(n: int) -> bool:
     return n % 2 == 0
 
@@ -26,4 +34,9 @@ def resolve_bet(spin_result: Pocket, bet: Bet) -> bool:
     
     return False
 
+def calculate_payout(bet: Bet, won: bool) -> int:
+    if not won:
+        return 0
+    amount = bet.amount
+    return amount * PAYOUT_MULTIPLIERS[bet.bet_type]
     
