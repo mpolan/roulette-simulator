@@ -106,27 +106,6 @@ Footer {
 }
 
 
-/* ==================== ACTIVE BET ==================== */
-
-#player_bet {
-    width: 76;
-    max-width: 95%;
-    height: 4;
-
-    margin: 0 0 1 0;
-    padding: 0 2;
-
-    background: #243020;
-    color: #E8C477;
-
-    border: round #A58B58;
-
-    text-style: bold;
-    text-align: center;
-    content-align: center middle;
-}
-
-
 /* ==================== FORM CONTROLS ==================== */
 
 Select,
@@ -179,23 +158,6 @@ Input {
 
     border: round #D5B36F;
     max-height: 12;
-}
-
-
-/* ==================== NUMBER INPUT ==================== */
-
-#input_straight_number {
-    display: none;
-
-    background: #1C2733;
-    color: #F5D58C;
-
-    border: tall #866845;
-}
-
-#input_straight_number:focus {
-    background: #263342;
-    border: tall #F5D58C;
 }
 
 
@@ -312,7 +274,6 @@ Screen { padding: 0; }
 #content { height: 1fr; align-horizontal: center; padding: 0 1; }
 #balance { height: 3; padding: 0 1; margin: 0; }
 #result { height: 3; padding: 0 1; margin: 0; }
-#player_bet { height: 3; margin: 0; }
 #table-scroll { width: 100%; max-width: 82; height: 14; overflow-x: auto; overflow-y: hidden; }
 RouletteTable { width: 78; height: 12; }
 #table-layout { width: 78; height: 9; }
@@ -331,3 +292,14 @@ RouletteTable Button.selected { border: double #F5D58C; text-style: bold reverse
 #outside-bets { width: 72; height: 3; margin-left: 6; }
 #outside-bets Button { width: 18; min-width: 18; max-width: 18; }
 #outside-bets Button.even, #outside-bets Button.odd { background: #17684E; }
+
+/* Multi-bet draft and accepted bets */
+#result { height: auto; min-height: 3; padding: 0 1; }
+#draft-selection, #draft-cost { height: auto; min-height: 1; color: #F5D58C; padding: 0 1; }
+#bet-cart { width: 76; max-width: 95%; height: auto; border: round #A58B58; background: #17232D; margin: 1 0; }
+.cart-title { height: 1; text-style: bold; color: #F5D58C; text-align: center; }
+.cart-empty, .cart-total { height: auto; min-height: 1; padding: 0 1; }
+.cart-total { color: #F5D58C; }
+.cart-row { height: 3; }
+.cart-row Static { width: 1fr; height: 3; content-align: left middle; padding: 0 1; }
+#bet-cart .remove-bet { width: 5; min-width: 5; max-width: 5; height: 3; margin: 0; background: #A92F43; color: #FFFFFF; }

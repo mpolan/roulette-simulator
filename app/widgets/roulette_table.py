@@ -12,10 +12,10 @@ from domain.wheel import Pocket
 class RouletteTable(Widget):
     """European betting layout; selection never places a bet."""
 
-    class NumberSelected(Message):
-        def __init__(self, number: int) -> None:
+    class NumbersSelected(Message):
+        def __init__(self, numbers: set[int]) -> None:
             super().__init__()
-            self.number = number
+            self.numbers = frozenset(numbers)
 
     class OutsideSelected(Message):
         def __init__(self, bet_type: BetType) -> None:
@@ -25,7 +25,7 @@ class RouletteTable(Widget):
     def __init__(self, pockets: tuple[Pocket, ...], **kwargs) -> None:
         super().__init__(**kwargs)
         self.pockets = {p.number: p for p in pockets}
-        self.selected_number: int | None = None
+        self.selected_numbers: set[int] = set()
 
     def number_button(self, number: int) -> Button:
         pocket = self.pockets[number]
@@ -49,10 +49,10 @@ class RouletteTable(Widget):
         for button in self.query(".outside"):
             button.set_class(bet_type is not None and button.id == f"outside-{bet_type.name}", "selected")
 
-    def select_number(self, number: int | None) -> None:
-        self.selected_number = number
+    def select_numbers(self, numbers: set[int]) -> None:
+        self.selected_numbers = set(numbers)
         for button in self.query(".pocket"):
-            button.set_class(button.id == f"number-{number}", "selected")
+            button.set_class(int(button.id.split("-")[1]) in self.selected_numbers, "selected")
 
     @on(Button.Pressed)
     def number_pressed(self, event: Button.Pressed) -> None:
@@ -63,5 +63,5 @@ class RouletteTable(Widget):
             self.post_message(self.OutsideSelected(BetType[event.button.id.split("-")[1]]))
             return
         number = int(event.button.id.split("-")[1])
-        self.select_number(number)
-        self.post_message(self.NumberSelected(number))
+        self.select_numbers(self.selected_numbers ^ {number})
+        self.post_message(self.NumbersSelected(self.selected_numbers))
