@@ -28,4 +28,4 @@ def validate_bet(bet: Bet) -> None:
         
     else:
         if selection is not None:
-            raise ValueError("Selection must be None in BetTypes [ODD, EVEN, RED, BLACK]")
+            raise ValueError("Selection must be None in BetTypes [ODD, EVEN, RED, BLACK, LOW, HIGH]")
