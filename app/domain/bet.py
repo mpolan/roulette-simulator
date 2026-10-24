@@ -7,6 +7,10 @@ class BetType(Enum):
     BLACK = "black"
     EVEN = "even"
     ODD = "odd"
+    LOW = "low"
+    HIGH = "high"
+    DOZEN = "dozen"
+    COLUMN = "column"
 
 @dataclass(frozen=True)
 class Bet:

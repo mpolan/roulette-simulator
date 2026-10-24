@@ -19,6 +19,13 @@ def validate_bet(bet: Bet) -> None:
             raise ValueError("Selection must be an integer.")
         if selection not in range (37):
             raise ValueError("Selection not in valid range of numbers")
+        
+    elif bet_type == BetType.DOZEN or bet_type == BetType.COLUMN:
+        if not type(selection) is int:
+            raise ValueError("Selection must be an integer.")
+        if selection not in range (1, 4):
+            raise ValueError("Selection not in valid range of numbers")
+        
     else:
         if selection is not None:
             raise ValueError("Selection must be None in BetTypes [ODD, EVEN, RED, BLACK]")
