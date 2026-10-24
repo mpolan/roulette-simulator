@@ -32,14 +32,12 @@ class RouletteWheelView(Static):
         self.draw_strip()
 
     def draw_strip(self) -> None:
-        strip = Text("                ?\n")
+        strip = Text("                 \u2193\n", style="bold #F5D58C")
         for offset in range(-3, 4):
             pocket = self.pockets[(self.index + offset) % len(self.pockets)]
             background = {"red": "#A92F43", "black": "#17232D",
                           "green": "#17684E"}[pocket.color.value]
             style = f"bold #F0EDE5 on {background}"
-            if offset == 0:
-                style = "bold #080D14 on #F5D58C"
             strip.append(f" {pocket.number:2} ", style)
             strip.append(" ")
         strip.append("\n           EUROPEAN WHEEL", style="#E8C477")
