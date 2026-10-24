@@ -1,13 +1,14 @@
 from rich.text import Text
 from textual import on
 from textual.app import App, ComposeResult
-from textual.containers import HorizontalScroll, Vertical, VerticalScroll
+from textual.containers import Grid, Horizontal, HorizontalScroll, Vertical, VerticalScroll
 from textual.widgets import Button, Header, Input, Select, Static
 
 from domain.bet import Bet, BetType
 from domain.game import Game
 from domain.round_result import RoundResult
 from widgets.bet_cart import BetCart
+from widgets.chip_picker import ChipButton
 from widgets.roulette_table import RouletteTable
 from widgets.roulette_wheel import RouletteWheelView
 
@@ -23,33 +24,47 @@ class RouletteApp(App):
         super().__init__(ansi_color=False)
         self.game = Game()
         self.animating = False
+        self.chip_value = 25
         self._pending_result: RoundResult | None = None
 
     def on_mount(self) -> None:
         self.title = "ROULETTE SIMULATOR"
         self.sub_title = "Obsidian Royale"
-        self.refresh_bets()
-        self.update_draft()
+        self.apply_mode("CHIPS")
 
     def compose(self) -> ComposeResult:
         yield Header()
         with VerticalScroll(id="content"):
-            yield Static(f"Balance: {self.game.player.balance}$", id="balance")
-            yield Static("No result", id="result")
-            with VerticalScroll(id="table-scroll"):
+            with Horizontal(id="balance-row"):
+                yield Static(f"Balance: {self.game.player.balance}$", id="balance")
+            with HorizontalScroll(id="table-scroll"):
                 yield RouletteTable(self.game.wheel.pockets, id="roulette-table")
-            with Vertical(id="bet-form"):
-                yield Select(((name, name) for name in BET_TYPE), value="RED",
-                             allow_blank=False, id="select_bet_type")
-                yield Select(((str(i), i) for i in (1, 2, 3)), value=1,
-                             allow_blank=False, id="select_bet_group")
-                yield Static("", id="draft-selection")
-                yield Input(placeholder="Stake per number / outside bet ($)",
-                            type="integer", id="input_bet_amount")
-                yield Static("", id="draft-cost")
-                yield Button("Confirm Bet", id="bet")
-            yield BetCart(id="bet-cart")
-            yield Button("SPIN", id="spin", disabled=True)
+            with Horizontal(id="dashboard"):
+                with VerticalScroll(id="bet-controls"):
+                    with Vertical(id="betting-mode"):
+                        yield Select((("CHIPS", "CHIPS"), ("CLASSIC", "CLASSIC")), value="CHIPS",
+                                     allow_blank=False, id="select_mode")
+                        with Vertical(id="chip-controls"):
+                            with Grid(id="chip-picker"):
+                                for value in self.game.CHIP_VALUES:
+                                    yield ChipButton(value, selected=value == self.chip_value)
+                            yield Static("LMB / Enter: add chip\nRMB / Delete: remove last\nMax 5 chips per field")
+                    with Vertical(id="bet-form"):
+                        yield Select(((name, name) for name in BET_TYPE), value="RED",
+                                     allow_blank=False, id="select_bet_type")
+                        yield Select(((str(i), i) for i in (1, 2, 3)), value=1,
+                                     allow_blank=False, id="select_bet_group")
+                        yield Static("", id="draft-selection")
+                        yield Input(placeholder="Stake per selection ($)",
+                                    type="integer", id="input_bet_amount")
+                        yield Static("", id="draft-cost")
+                        yield Button("Confirm Bet", id="bet")
+                    yield Button("SPIN", id="spin", disabled=True)
+                with Vertical(id="round-info"):
+                    with VerticalScroll(id="cart-scroll"):
+                        yield BetCart(id="bet-cart")
+                    with VerticalScroll(id="result-scroll"):
+                        yield Static("No result", id="result")
         with VerticalScroll(id="spin-view"):
             with HorizontalScroll(id="wheel-scroll"):
                 yield RouletteWheelView(self.game.wheel.pockets, id="roulette-wheel")
@@ -57,11 +72,53 @@ class RouletteApp(App):
 
     def lock_betting(self, locked: bool) -> None:
         self.query_one("#bet-form").disabled = locked
+        self.query_one("#betting-mode").disabled = locked
         self.query_one(RouletteTable).disabled = locked
         self.query_one(BetCart).disabled = locked
         self.query_one("#spin", Button).disabled = locked or not self.game.current_bets
 
+    @on(Select.Changed, "#select_mode")
+    def mode_changed(self, event: Select.Changed) -> None:
+        if self.animating:
+            return
+        self.apply_mode(event.value)
+
+    def apply_mode(self, mode: str) -> None:
+        table = self.query_one(RouletteTable)
+        table.chips_mode = mode == "CHIPS"
+        table.select_numbers(set())
+        self.query_one("#chip-controls").display = table.chips_mode
+        self.query_one("#bet-form").display = not table.chips_mode
+        self.update_draft()
+        self.refresh_bets()
+
+    @on(Button.Pressed, ".chip-choice")
+    def chip_selected(self, event: Button.Pressed) -> None:
+        if self.animating:
+            return
+        self.chip_value = event.button.value
+        for button in self.query(ChipButton):
+            button.set_class(button.value == self.chip_value, "chosen")
+            button.refresh()
+
+    @on(RouletteTable.ChipRequested)
+    def chip_requested(self, event: RouletteTable.ChipRequested) -> None:
+        if self.animating or not self.query_one(RouletteTable).chips_mode:
+            return
+        try:
+            if event.remove:
+                self.game.remove_chip(event.bet_type, event.selection)
+            else:
+                self.game.place_chip(event.bet_type, self.chip_value, event.selection)
+        except ValueError as error:
+            self.notify(str(error), severity="error")
+            return
+        self.refresh_bets()
+
     def refresh_bets(self) -> None:
+        stacks = self.game.chip_stacks
+        table = self.query_one(RouletteTable)
+        table.show_chips(stacks, self.game.MAX_CHIPS_PER_FIELD)
         self.query_one("#balance", Static).update(f"Balance: {self.game.player.balance}$")
         self.query_one(BetCart).show_bets(
             self.game.current_bets, self.game.total_stake, self.game.player.balance)
@@ -75,7 +132,7 @@ class RouletteApp(App):
         group = self.query_one("#select_bet_group", Select)
         group.display = grouped
         selection = group.value if grouped else None
-        table.select_outside(None if straight else BET_TYPE.get(kind), selection)
+        table.select_outside(None if straight or table.chips_mode else BET_TYPE.get(kind), selection)
         numbers = sorted(table.selected_numbers)
         label = ", ".join(map(str, numbers)) if numbers else "none (click the table)"
         self.query_one("#draft-selection", Static).update(
@@ -124,7 +181,7 @@ class RouletteApp(App):
 
     @on(Button.Pressed, "#bet")
     def on_confirm_bet(self, event: Button.Pressed) -> None:
-        if self.animating:
+        if self.animating or self.query_one(RouletteTable).chips_mode:
             return
         try:
             amount_text = self.query_one("#input_bet_amount", Input).value
@@ -184,10 +241,14 @@ class RouletteApp(App):
         display.update("Spinning...")
         # Use the accepted bets in the result: the engine has already cleared its cart.
         lines = ["BETS IN THIS ROUND"]
+        field_totals: dict[tuple[BetType, int | None], int] = {}
         for item in result.bet_results:
             bet = item.bet
-            selection = f" {bet.selection}" if bet.selection is not None else ""
-            lines.append(f"{bet.bet_type.name}{selection}    {bet.amount}$")
+            key = (bet.bet_type, bet.selection)
+            field_totals[key] = field_totals.get(key, 0) + bet.amount
+        for (kind, number), amount in field_totals.items():
+            selection = f" {number}" if number is not None else ""
+            lines.append(f"{kind.name}{selection}    {amount}$")
         lines.append(f"TOTAL STAKE: {result.total_stake}$")
         self.query_one("#spinning-bets", Static).update("\n".join(lines))
         self.screen.add_class("spinning")
@@ -229,7 +290,8 @@ class RouletteApp(App):
         self.lock_betting(False)
         self.screen.remove_class("spinning")
         self.query_one("#content", VerticalScroll).scroll_home(animate=False)
-        self.query_one("#select_bet_type").focus()
+        self.query_one("#result-scroll", VerticalScroll).scroll_home(animate=False)
+        self.query_one(f"#chip-{self.chip_value}" if self.query_one(RouletteTable).chips_mode else "#select_bet_type").focus()
 
 
 if __name__ == "__main__":

@@ -67,8 +67,7 @@ Footer {
 /* ==================== SPIN RESULT ==================== */
 
 #result {
-    width: 76;
-    max-width: 95%;
+    width: 100%;
     height: auto;
     min-height: 3;
 
@@ -263,27 +262,27 @@ Input:disabled {
 }
 
 /* Interactive casino layout */
-#content { height: 1fr; align-horizontal: center; padding: 0 1; }
-#table-scroll { width: 100%; max-width: 88; height: 17; overflow-x: auto; overflow-y: hidden; }
-RouletteTable { width: 84; height: 15; }
-#table-layout { width: 84; height: 9; }
-#number-grid { grid-size: 12 3; grid-columns: 6; grid-rows: 3; width: 72; height: 9; }
-RouletteTable Button { width: 6; min-width: 6; max-width: 6; height: 3; margin: 0; padding: 0; border: solid #415564; color: #FFFFFF; }
+#content { height: 1fr; align-horizontal: center; padding: 0 1; scrollbar-gutter: stable; }
+#table-scroll { width: 100%; max-width: 116; height: 27; overflow-x: auto; overflow-y: hidden; align-horizontal: center; }
+RouletteTable { width: 112; height: 25; }
+#table-layout { width: 112; height: 15; }
+#number-grid { grid-size: 12 3; grid-columns: 8; grid-rows: 5; width: 96; height: 15; }
+RouletteTable Button { width: 8; min-width: 8; max-width: 8; height: 5; margin: 0; padding: 0; border: solid #415564; color: #FFFFFF; }
 #roulette-table Button.red { background: #A92F43; }
 #roulette-table Button.black { background: #121D27; }
-#roulette-table Button.green { background: #17684E; height: 9; }
+#roulette-table Button.green { background: #17684E; height: 15; }
 RouletteTable Button:hover, RouletteTable Button:focus { border: heavy #F5D58C; tint: #F5D58C 15%; }
 RouletteTable Button.selected { border: double #F5D58C; text-style: bold reverse; }
-#bet-form { height: auto; width: 76; max-width: 95%; }
+#bet-form { display: none; height: auto; width: 100%; }
 #bet-form Input, #bet-form Select, #bet-form Button { width: 100%; max-width: 100%; margin: 0; }
 #roulette-wheel { width: 75; min-width: 75; max-width: 75; height: 31; border: round #B99755; content-align: center middle; background: #080D14; }
 
-#outside-bets { width: 72; height: 3; margin-left: 6; }
-#outside-bets Button { width: 12; min-width: 12; max-width: 12; }
+#outside-bets { width: 96; height: 5; margin-left: 8; }
+#outside-bets Button { width: 16; min-width: 16; max-width: 16; }
 
 /* Multi-bet draft and accepted bets */
 #draft-selection, #draft-cost { height: auto; min-height: 1; color: #F5D58C; padding: 0 1; }
-#bet-cart { width: 76; max-width: 95%; height: auto; border: round #A58B58; background: #17232D; margin: 1 0; }
+#bet-cart { width: 100%; height: auto; border: round #A58B58; background: #17232D; margin: 0; }
 .cart-title { height: 1; text-style: bold; color: #F5D58C; text-align: center; }
 .cart-empty, .cart-total { height: auto; min-height: 1; padding: 0 1; }
 .cart-total { color: #F5D58C; }
@@ -299,8 +298,29 @@ Screen.spinning #content, Screen.spinning Header { display: none; }
 Screen.spinning #spin-view { display: block; }
 #spinning-bets { width: 76; max-width: 95%; height: auto; padding: 1 2; border: round #A58B58; background: #17232D; color: #F5D58C; }
 
-#column-bets { grid-size: 1 3; grid-rows: 3; width: 6; height: 9; }
-#dozen-bets { width: 72; height: 3; margin-left: 6; }
-#dozen-bets Button { width: 24; min-width: 24; max-width: 24; }
+#column-bets { grid-size: 1 3; grid-rows: 5; width: 8; height: 15; }
+#dozen-bets { width: 96; height: 5; margin-left: 8; }
+#dozen-bets Button { width: 32; min-width: 32; max-width: 32; }
 #roulette-table Button.group, #roulette-table Button.low, #roulette-table Button.high, #roulette-table Button.even, #roulette-table Button.odd { background: #518241; }
 #select_bet_group { display: none; }
+
+/* Chip controls and compact three-line field labels. */
+#betting-mode { width: 100%; height: auto; }
+#betting-mode Select { width: 100%; max-width: 100%; margin: 0; }
+#chip-controls { height: auto; }
+#chip-controls Static { height: auto; color: #F5D58C; }
+RouletteTable Button.has-chips { border: double #F5D58C; }
+
+/* Fixed table stage; changing bets and results only scroll inside the dashboard. */
+#dashboard { width: 116; max-width: 100%; height: 22; }
+#bet-controls { width: 38; height: 100%; padding: 0 1; scrollbar-gutter: stable; }
+#bet-controls #spin { width: 100%; max-width: 100%; margin-top: 1; }
+#round-info { width: 1fr; height: 100%; }
+#cart-scroll { height: 11; scrollbar-gutter: stable; }
+#result-scroll { height: 11; scrollbar-gutter: stable; }
+
+/* Balance follows the same centered stage as the table. */
+#balance-row { width: 116; max-width: 100%; height: 3; align-horizontal: center; }
+#chip-picker { grid-size: 3 2; grid-columns: 11; grid-rows: 5; width: 33; height: 10; }
+#chip-picker ChipButton { width: 11; min-width: 11; max-width: 11; height: 5; margin: 0; padding: 0; border: none; background: transparent; tint: transparent; background-tint: transparent; }
+#chip-picker ChipButton:focus, #chip-picker ChipButton:hover { text-style: bold; }
