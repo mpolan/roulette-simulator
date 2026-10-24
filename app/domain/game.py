@@ -1,7 +1,7 @@
 
 from domain.player import Player
 from domain.bet import Bet
-from domain.wheel import Wheel, Pocket
+from domain.wheel import Wheel
 
 from services.bet_resolver import resolve_bet, calculate_payout
 from services.bet_validator import validate_bet
@@ -38,11 +38,13 @@ class Game:
         self._bets.extend(bets)
 
     def remove_bet(self, bet: Bet) -> None:
-        if bet not in self._bets:
-            raise ValueError("Bet does not exist")
-
-        self._bets.remove(bet)
-        self.player.credit(bet.amount)
+        """Remove one accepted object, never an equal but distinct bet."""
+        for index, active_bet in enumerate(self._bets):
+            if active_bet is bet:
+                del self._bets[index]
+                self.player.credit(active_bet.amount)
+                return
+        raise ValueError("Bet does not exist")
 
     def spin(self) -> RoundResult:
         if not self._bets:

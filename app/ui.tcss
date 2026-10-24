@@ -14,7 +14,7 @@ Screen {
     background: #080D14;
     color: #F0EDE5;
 
-    padding: 1 2;
+    padding: 0;
     overflow-y: auto;
 
     scrollbar-background: #101923;
@@ -49,10 +49,10 @@ Footer {
 #balance {
     width: 76;
     max-width: 95%;
-    height: 5;
+    height: 3;
 
-    margin: 1 0 1 0;
-    padding: 1 2;
+    margin: 0;
+    padding: 0 1;
 
     background: #17232D;
     color: #F7D78D;
@@ -69,10 +69,11 @@ Footer {
 #result {
     width: 76;
     max-width: 95%;
-    height: 6;
+    height: auto;
+    min-height: 3;
 
-    margin: 0 0 1 0;
-    padding: 1 2;
+    margin: 0;
+    padding: 0 1;
 
     background: #101F23;
     color: #F2E9D2;
@@ -97,14 +98,6 @@ Footer {
     color: #FF8E9B;
     border: double #DC5361;
 }
-
-/* Green zero */
-#result.zero {
-    background: #213927;
-    color: #D2F5B1;
-    border: double #86C87A;
-}
-
 
 /* ==================== FORM CONTROLS ==================== */
 
@@ -226,7 +219,7 @@ Button {
 /* ==================== SPIN BUTTON ==================== */
 
 #spin {
-    height: 4;
+    height: 3;
 
     margin: 0 0 1 0;
 
@@ -270,10 +263,7 @@ Input:disabled {
 }
 
 /* Interactive casino layout */
-Screen { padding: 0; }
 #content { height: 1fr; align-horizontal: center; padding: 0 1; }
-#balance { height: 3; padding: 0 1; margin: 0; }
-#result { height: 3; padding: 0 1; margin: 0; }
 #table-scroll { width: 100%; max-width: 82; height: 14; overflow-x: auto; overflow-y: hidden; }
 RouletteTable { width: 78; height: 12; }
 #table-layout { width: 78; height: 9; }
@@ -287,14 +277,12 @@ RouletteTable Button.selected { border: double #F5D58C; text-style: bold reverse
 #bet-form { height: auto; width: 76; max-width: 95%; }
 #bet-form Input, #bet-form Select, #bet-form Button { width: 100%; max-width: 100%; margin: 0; }
 #roulette-wheel { width: 75; min-width: 75; max-width: 75; height: 31; border: round #B99755; content-align: center middle; background: #080D14; }
-#spin { height: 3; margin: 0 0 1 0; }
 
 #outside-bets { width: 72; height: 3; margin-left: 6; }
 #outside-bets Button { width: 18; min-width: 18; max-width: 18; }
 #outside-bets Button.even, #outside-bets Button.odd { background: #17684E; }
 
 /* Multi-bet draft and accepted bets */
-#result { height: auto; min-height: 3; padding: 0 1; }
 #draft-selection, #draft-cost { height: auto; min-height: 1; color: #F5D58C; padding: 0 1; }
 #bet-cart { width: 76; max-width: 95%; height: auto; border: round #A58B58; background: #17232D; margin: 1 0; }
 .cart-title { height: 1; text-style: bold; color: #F5D58C; text-align: center; }

@@ -19,7 +19,8 @@ class RouletteApp(App):
     CSS_PATH = "ui.tcss"
 
     def __init__(self) -> None:
-        super().__init__()
+        # Keep the casino palette even when Textual selects its ANSI theme.
+        super().__init__(ansi_color=False)
         self.game = Game()
         self.animating = False
         self._pending_result: RoundResult | None = None
@@ -154,7 +155,7 @@ class RouletteApp(App):
         self._pending_result = result
         self.lock_betting(True)
         display = self.query_one("#result", Static)
-        display.remove_class("win", "loss", "zero")
+        display.remove_class("win", "loss")
         display.update("Spinning...")
         # Use the accepted bets in the result: the engine has already cleared its cart.
         lines = ["BETS IN THIS ROUND"]
@@ -177,7 +178,7 @@ class RouletteApp(App):
         self._pending_result = None
         self.animating = False
         display = self.query_one("#result", Static)
-        display.remove_class("win", "loss", "zero")
+        display.remove_class("win", "loss")
         if result.net_profit != 0:
             display.add_class("win" if result.net_profit > 0 else "loss")
         pocket = result.pocket
@@ -187,11 +188,15 @@ class RouletteApp(App):
         for item in result.bet_results:
             selection = f" {item.bet.selection}" if item.bet.selection is not None else ""
             text.append(f"{item.bet.bet_type.name}{selection} ({item.bet.amount}$)  "
-                        f"{'WIN' if item.won else 'LOSS'}  {item.payout:+}$\n",
+                        f"{'WIN' if item.won else 'LOSS'}  PAYOUT: {item.payout}$\n",
                         style="#72F5BA" if item.won else "#FF8E9B")
-        text.append(f"TOTAL STAKE: {result.total_stake}$\n"
-                    f"TOTAL PAYOUT: {result.total_payout}$\n"
-                    f"NET PROFIT: {result.net_profit:+}$")
+        text.append(f"\nTOTAL STAKE: {result.total_stake}$\n"
+                    f"TOTAL PAYOUT (includes returned winning stakes): {result.total_payout}$\n",
+                    style="#F0EDE5")
+        outcome = "PROFIT" if result.net_profit > 0 else "LOSS" if result.net_profit < 0 else "BREAK EVEN"
+        net_color = "#72F5BA" if result.net_profit > 0 else "#FF8E9B" if result.net_profit < 0 else "#F0EDE5"
+        text.append(f"NET PROFIT (payout - stake): {result.net_profit:+}$ | {outcome}",
+                    style=f"bold {net_color}")
         display.update(text)
         self.query_one(RouletteTable).select_numbers(set())
         self.update_draft()
