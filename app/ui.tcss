@@ -1,8 +1,308 @@
-#input_straight_number{
-    display:none;
+
+/* =========================================================
+   OBSIDIAN ROYALE
+   European Roulette — Textual TUI
+   ========================================================= */
+
+
+/* ==================== FOUNDATION ==================== */
+
+Screen {
+    layout: vertical;
+    align: center top;
+
+    background: #080D14;
+    color: #F0EDE5;
+
+    padding: 1 2;
+    overflow-y: auto;
+
+    scrollbar-background: #101923;
+    scrollbar-color: #A58B58;
+    scrollbar-color-hover: #E8C477;
 }
 
-Select, Input {
-    width: 60;
-    margin: 2;
+
+/* ==================== HEADER ==================== */
+
+Header {
+    background: #121D27;
+    color: #F5D58C;
+
+    text-style: bold;
+    border-bottom: heavy #B99755;
+
+    height: 2;
+}
+
+Footer {
+    background: #121D27;
+    color: #AEBBBE;
+
+    border-top: solid #6D5938;
+    height: 1;
+}
+
+
+/* ==================== PLAYER BALANCE ==================== */
+
+#balance {
+    width: 76;
+    max-width: 95%;
+    height: 5;
+
+    margin: 1 0 1 0;
+    padding: 1 2;
+
+    background: #17232D;
+    color: #F7D78D;
+
+    border: double #B99755;
+    text-style: bold;
+    text-align: center;
+    content-align: center middle;
+}
+
+
+/* ==================== SPIN RESULT ==================== */
+
+#result {
+    width: 76;
+    max-width: 95%;
+    height: 6;
+
+    margin: 0 0 1 0;
+    padding: 1 2;
+
+    background: #101F23;
+    color: #F2E9D2;
+
+    border: round #3C8E77;
+
+    text-style: bold;
+    text-align: center;
+    content-align: center middle;
+}
+
+/* Winning spin */
+#result.win {
+    background: #10352C;
+    color: #72F5BA;
+    border: double #32D99C;
+}
+
+/* Losing spin */
+#result.loss {
+    background: #321A23;
+    color: #FF8E9B;
+    border: double #DC5361;
+}
+
+/* Green zero */
+#result.zero {
+    background: #213927;
+    color: #D2F5B1;
+    border: double #86C87A;
+}
+
+
+/* ==================== ACTIVE BET ==================== */
+
+#player_bet {
+    width: 76;
+    max-width: 95%;
+    height: 4;
+
+    margin: 0 0 1 0;
+    padding: 0 2;
+
+    background: #243020;
+    color: #E8C477;
+
+    border: round #A58B58;
+
+    text-style: bold;
+    text-align: center;
+    content-align: center middle;
+}
+
+
+/* ==================== FORM CONTROLS ==================== */
+
+Select,
+Input {
+    width: 76;
+    max-width: 95%;
+
+    height: 3;
+    margin: 0 0 1 0;
+
+    background: #18242F;
+    color: #F0EDE5;
+}
+
+
+/* ==================== BET TYPE SELECT ==================== */
+
+#select_bet_type {
+    height: 3;
+    background: #18242F;
+}
+
+#select_bet_type > SelectCurrent {
+    height: 3;
+
+    background: #18242F;
+    color: #F5D58C;
+
+    border: tall #775F3D;
+    padding: 0 2;
+
+    text-style: bold;
+
+    transition: background 200ms, color 200ms;
+}
+
+#select_bet_type:hover > SelectCurrent {
+    background: #243442;
+    border: tall #D5B36F;
+}
+
+#select_bet_type:focus > SelectCurrent {
+    background: #2A3540;
+    border: tall #F5D58C;
+}
+
+#select_bet_type > SelectOverlay {
+    background: #16232E;
+    color: #F0EDE5;
+
+    border: round #D5B36F;
+    max-height: 12;
+}
+
+
+/* ==================== NUMBER INPUT ==================== */
+
+#input_straight_number {
+    display: none;
+
+    background: #1C2733;
+    color: #F5D58C;
+
+    border: tall #866845;
+}
+
+#input_straight_number:focus {
+    background: #263342;
+    border: tall #F5D58C;
+}
+
+
+/* ==================== AMOUNT INPUT ==================== */
+
+#input_bet_amount {
+    background: #18242F;
+    color: #F0EDE5;
+
+    border: tall #415564;
+
+    transition: background 200ms;
+}
+
+#input_bet_amount:hover {
+    background: #202E3A;
+    border: tall #8796A0;
+}
+
+#input_bet_amount:focus {
+    background: #273440;
+    border: tall #F5D58C;
+    color: #FFFFFF;
+}
+
+
+/* ==================== BUTTON FOUNDATION ==================== */
+
+Button {
+    width: 76;
+    max-width: 95%;
+
+    height: 3;
+    margin: 0 0 1 0;
+
+    text-style: bold;
+
+    transition: background 200ms, color 200ms;
+}
+
+
+/* ==================== CONFIRM BET ==================== */
+
+#bet {
+    background: #194B40;
+    color: #DDFCED;
+
+    border: tall #38B995;
+}
+
+#bet:hover {
+    background: #24735A;
+    color: #FFFFFF;
+
+    border: tall #75EFC2;
+}
+
+#bet:focus {
+    background: #226D54;
+    color: #FFFFFF;
+
+    border: double #A1FFCF;
+}
+
+
+/* ==================== SPIN BUTTON ==================== */
+
+#spin {
+    height: 4;
+
+    margin: 0 0 1 0;
+
+    background: #A92F43;
+    color: #FFF0DC;
+
+    border: double #E8C477;
+
+    text-style: bold;
+}
+
+#spin:hover {
+    background: #DA4259;
+    color: #FFFFFF;
+
+    border: double #FFE4A5;
+}
+
+#spin:focus {
+    background: #C8374F;
+    color: #FFFFFF;
+
+    border: double #FFE4A5;
+}
+
+
+/* ==================== DISABLED STATES ==================== */
+
+Button:disabled {
+    background: #252C33;
+    color: #69747A;
+
+    border: tall #39424A;
+}
+
+Input:disabled {
+    background: #121920;
+    color: #6D777E;
+
+    border: tall #303941;
 }
