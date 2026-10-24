@@ -1,7 +1,7 @@
 from rich.text import Text
 from textual import on
 from textual.app import App, ComposeResult
-from textual.containers import Vertical, VerticalScroll
+from textual.containers import HorizontalScroll, Vertical, VerticalScroll
 from textual.widgets import Button, Header, Input, Select, Static
 
 from domain.bet import Bet, BetType
@@ -46,8 +46,11 @@ class RouletteApp(App):
                 yield Static("", id="draft-cost")
                 yield Button("Confirm Bet", id="bet")
             yield BetCart(id="bet-cart")
-            yield RouletteWheelView(self.game.wheel.pockets, id="roulette-wheel")
             yield Button("SPIN", id="spin", disabled=True)
+        with VerticalScroll(id="spin-view"):
+            with HorizontalScroll(id="wheel-scroll"):
+                yield RouletteWheelView(self.game.wheel.pockets, id="roulette-wheel")
+            yield Static("", id="spinning-bets")
 
     def lock_betting(self, locked: bool) -> None:
         self.query_one("#bet-form").disabled = locked
@@ -153,6 +156,17 @@ class RouletteApp(App):
         display = self.query_one("#result", Static)
         display.remove_class("win", "loss", "zero")
         display.update("Spinning...")
+        # Use the accepted bets in the result: the engine has already cleared its cart.
+        lines = ["BETS IN THIS ROUND"]
+        for item in result.bet_results:
+            bet = item.bet
+            selection = f" {bet.selection}" if bet.selection is not None else ""
+            lines.append(f"{bet.bet_type.name}{selection}    {bet.amount}$")
+        lines.append(f"TOTAL STAKE: {result.total_stake}$")
+        self.query_one("#spinning-bets", Static).update("\n".join(lines))
+        self.screen.add_class("spinning")
+        self.query_one("#spin-view", VerticalScroll).scroll_home(animate=False)
+        self.query_one("#spin-view").focus()
         self.query_one(RouletteWheelView).animate_to(result.pocket)
 
     @on(RouletteWheelView.Finished)
@@ -183,6 +197,9 @@ class RouletteApp(App):
         self.update_draft()
         self.refresh_bets()
         self.lock_betting(False)
+        self.screen.remove_class("spinning")
+        self.query_one("#content", VerticalScroll).scroll_home(animate=False)
+        self.query_one("#select_bet_type").focus()
 
 
 if __name__ == "__main__":

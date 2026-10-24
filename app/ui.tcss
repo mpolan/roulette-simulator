@@ -286,7 +286,7 @@ RouletteTable Button:hover, RouletteTable Button:focus { border: heavy #F5D58C; 
 RouletteTable Button.selected { border: double #F5D58C; text-style: bold reverse; }
 #bet-form { height: auto; width: 76; max-width: 95%; }
 #bet-form Input, #bet-form Select, #bet-form Button { width: 100%; max-width: 100%; margin: 0; }
-#roulette-wheel { width: 76; max-width: 95%; height: 5; border: round #B99755; content-align: center middle; background: #080D14; }
+#roulette-wheel { width: 75; min-width: 75; max-width: 75; height: 31; border: round #B99755; content-align: center middle; background: #080D14; }
 #spin { height: 3; margin: 0 0 1 0; }
 
 #outside-bets { width: 72; height: 3; margin-left: 6; }
@@ -303,3 +303,11 @@ RouletteTable Button.selected { border: double #F5D58C; text-style: bold reverse
 .cart-row { height: 3; }
 .cart-row Static { width: 1fr; height: 3; content-align: left middle; padding: 0 1; }
 #bet-cart .remove-bet { width: 5; min-width: 5; max-width: 5; height: 3; margin: 0; background: #A92F43; color: #FFFFFF; }
+
+#wheel-scroll { width: 100%; max-width: 78; height: 33; overflow-x: auto; overflow-y: hidden; align-horizontal: center; }
+
+/* Dedicated spin view: no form, balance or early settlement information. */
+#spin-view { display: none; height: 1fr; padding: 0 1; align-horizontal: center; }
+Screen.spinning #content, Screen.spinning Header { display: none; }
+Screen.spinning #spin-view { display: block; }
+#spinning-bets { width: 76; max-width: 95%; height: auto; padding: 1 2; border: round #A58B58; background: #17232D; color: #F5D58C; }
