@@ -1,35 +1,71 @@
+
 from domain.player import Player
 from domain.bet import Bet
 from domain.wheel import Wheel, Pocket
 
 from services.bet_resolver import resolve_bet, calculate_payout
 from services.bet_validator import validate_bet
+from .round_result import BetResult, RoundResult
 
-class Game():
+class Game:
     def __init__(self):
         self.player = Player()
-        self.current_bet: Bet | None = None
+        self._bets: list[Bet] = []
         self.wheel = Wheel()
 
-    def place_bet(self, bet: Bet):
-        if self.current_bet is not None:
-            raise ValueError("Bet already placed")
-        
-        validate_bet(bet)
-        self.player.debit(bet.amount)
-        self.current_bet = bet
+    @property
+    def current_bets(self) -> tuple[Bet, ...]:
+        return tuple(self._bets)
 
-    def spin(self) -> tuple[Pocket, int]:
-        if self.current_bet is None:
-            raise ValueError("No active bet")
-        
+    @property
+    def total_stake(self) -> int:
+        return sum(bet.amount for bet in self._bets)
+
+    def place_bet(self, bet: Bet) -> None:
+        self.place_bets([bet])
+
+    def place_bets(self, bets: list[Bet]) -> None:
+        if not bets:
+            raise ValueError("Bets list cannot be empty")
+
+        for bet in bets:
+            validate_bet(bet)
+
+        total_amount = sum(bet.amount for bet in bets)
+
+        self.player.debit(total_amount)
+
+        self._bets.extend(bets)
+
+    def remove_bet(self, bet: Bet) -> None:
+        if bet not in self._bets:
+            raise ValueError("Bet does not exist")
+
+        self._bets.remove(bet)
+        self.player.credit(bet.amount)
+
+    def spin(self) -> RoundResult:
+        if not self._bets:
+            raise ValueError("No active bets")
+
+        total_stake = self.total_stake
         spin_result = self.wheel.spin()
-        amount_won = 0
 
-        if resolve_bet(spin_result, self.current_bet):
-            amount_won = calculate_payout(self.current_bet, True)
-            self.player.credit(amount_won)
+        bet_results: list[BetResult] = []
+        total_payout = 0
 
-        self.current_bet = None
+        for bet in self._bets:
+            won = resolve_bet(spin_result, bet)
+            payout = calculate_payout(bet, won)
 
-        return spin_result, amount_won
+            bet_results.append(BetResult(bet, won, payout))
+            total_payout += payout
+            
+        net_profit = total_payout - total_stake
+
+        if total_payout > 0:
+            self.player.credit(total_payout)
+
+        self._bets.clear()
+
+        return RoundResult(spin_result, tuple(bet_results), total_stake, total_payout, net_profit)
