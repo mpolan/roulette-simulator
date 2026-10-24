@@ -18,9 +18,10 @@ class RouletteTable(Widget):
             self.numbers = frozenset(numbers)
 
     class OutsideSelected(Message):
-        def __init__(self, bet_type: BetType) -> None:
+        def __init__(self, bet_type: BetType, selection: int | None = None) -> None:
             super().__init__()
             self.bet_type = bet_type
+            self.selection = selection
 
     def __init__(self, pockets: tuple[Pocket, ...], **kwargs) -> None:
         super().__init__(**kwargs)
@@ -40,14 +41,23 @@ class RouletteTable(Widget):
                     for number in range(row, 37, 3):
                         yield self.number_button(number)
 
+            with Grid(id="column-bets"):
+                for column in (3, 2, 1):
+                    yield Button(f"COL {column}", id=f"outside-COLUMN-{column}", classes="outside group")
+        with Horizontal(id="dozen-bets"):
+            for dozen, label in ((1, "1st 12"), (2, "2nd 12"), (3, "3rd 12")):
+                yield Button(label, id=f"outside-DOZEN-{dozen}", classes="outside group")
         with Horizontal(id="outside-bets"):
-            for kind in (BetType.RED, BetType.BLACK, BetType.EVEN, BetType.ODD):
-                yield Button(kind.name, id=f"outside-{kind.name}",
+            for kind in (BetType.LOW, BetType.EVEN, BetType.RED, BetType.BLACK, BetType.ODD, BetType.HIGH):
+                yield Button({BetType.LOW: "1-18", BetType.HIGH: "19-36"}.get(kind, kind.name), id=f"outside-{kind.name}",
                              classes=f"outside {kind.value}")
 
-    def select_outside(self, bet_type: BetType | None) -> None:
+    def select_outside(self, bet_type: BetType | None, selection: int | None = None) -> None:
+        selected_id = f"outside-{bet_type.name}" if bet_type is not None else ""
+        if selection is not None:
+            selected_id += f"-{selection}"
         for button in self.query(".outside"):
-            button.set_class(bet_type is not None and button.id == f"outside-{bet_type.name}", "selected")
+            button.set_class(button.id == selected_id, "selected")
 
     def select_numbers(self, numbers: set[int]) -> None:
         self.selected_numbers = set(numbers)
@@ -60,7 +70,8 @@ class RouletteTable(Widget):
         if self.disabled:
             return
         if event.button.has_class("outside"):
-            self.post_message(self.OutsideSelected(BetType[event.button.id.split("-")[1]]))
+            parts = event.button.id.split("-")
+            self.post_message(self.OutsideSelected(BetType[parts[1]], int(parts[2]) if len(parts) > 2 else None))
             return
         number = int(event.button.id.split("-")[1])
         self.select_numbers(self.selected_numbers ^ {number})

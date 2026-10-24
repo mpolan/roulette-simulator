@@ -41,6 +41,8 @@ class RouletteApp(App):
             with Vertical(id="bet-form"):
                 yield Select(((name, name) for name in BET_TYPE), value="RED",
                              allow_blank=False, id="select_bet_type")
+                yield Select(((str(i), i) for i in (1, 2, 3)), value=1,
+                             allow_blank=False, id="select_bet_group")
                 yield Static("", id="draft-selection")
                 yield Input(placeholder="Stake per number / outside bet ($)",
                             type="integer", id="input_bet_amount")
@@ -69,11 +71,15 @@ class RouletteApp(App):
         table = self.query_one(RouletteTable)
         kind = self.query_one("#select_bet_type", Select).value
         straight = kind == "STRAIGHT"
-        table.select_outside(None if straight else BET_TYPE.get(kind))
+        grouped = kind in ("DOZEN", "COLUMN")
+        group = self.query_one("#select_bet_group", Select)
+        group.display = grouped
+        selection = group.value if grouped else None
+        table.select_outside(None if straight else BET_TYPE.get(kind), selection)
         numbers = sorted(table.selected_numbers)
         label = ", ".join(map(str, numbers)) if numbers else "none (click the table)"
         self.query_one("#draft-selection", Static).update(
-            f"Selected numbers: {label}" if straight else f"Selected bet: {kind}")
+            f"Selected numbers: {label}" if straight else f"Selected bet: {kind}" + (f" {selection}" if grouped else ""))
         amount_text = self.query_one("#input_bet_amount", Input).value
         count = len(numbers) if straight else 1
         amount = int(amount_text) if amount_text.isdecimal() else 0
@@ -91,11 +97,25 @@ class RouletteApp(App):
     def outside_selected(self, event: RouletteTable.OutsideSelected) -> None:
         if not self.animating:
             self.query_one("#select_bet_type", Select).value = event.bet_type.name
+            if event.selection is not None:
+                self.query_one("#select_bet_group", Select).value = event.selection
+            self.update_draft()
 
     @on(Select.Changed, "#select_bet_type")
     def select_changed(self, event: Select.Changed) -> None:
         if event.value != "STRAIGHT":
             self.query_one(RouletteTable).select_numbers(set())
+        group = self.query_one("#select_bet_group", Select)
+        value = group.value
+        if event.value == "DOZEN":
+            group.set_options((("1st dozen (1-12)", 1), ("2nd dozen (13-24)", 2), ("3rd dozen (25-36)", 3)))
+        elif event.value == "COLUMN":
+            group.set_options((("Column 1 (1, 4, ... 34)", 1), ("Column 2 (2, 5, ... 35)", 2), ("Column 3 (3, 6, ... 36)", 3)))
+        group.value = value if value in (1, 2, 3) else 1
+        self.update_draft()
+
+    @on(Select.Changed, "#select_bet_group")
+    def group_changed(self) -> None:
         self.update_draft()
 
     @on(Input.Changed, "#input_bet_amount")
@@ -117,6 +137,11 @@ class RouletteApp(App):
                 if not numbers:
                     raise ValueError("Please select at least one number on the table.")
                 bets = [Bet(amount, kind, number) for number in numbers]
+            elif kind in (BetType.DOZEN, BetType.COLUMN):
+                selection = self.query_one("#select_bet_group", Select).value
+                if selection not in (1, 2, 3):
+                    raise ValueError("Please select a dozen or column (1-3).")
+                bets = [Bet(amount, kind, selection)]
             else:
                 bets = [Bet(amount, kind)]
             self.game.place_bets(bets)

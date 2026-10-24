@@ -188,7 +188,7 @@ Button {
 
     text-style: bold;
 
-    transition: background 200ms, color 200ms;
+
 }
 
 
@@ -264,14 +264,14 @@ Input:disabled {
 
 /* Interactive casino layout */
 #content { height: 1fr; align-horizontal: center; padding: 0 1; }
-#table-scroll { width: 100%; max-width: 82; height: 14; overflow-x: auto; overflow-y: hidden; }
-RouletteTable { width: 78; height: 12; }
-#table-layout { width: 78; height: 9; }
+#table-scroll { width: 100%; max-width: 88; height: 17; overflow-x: auto; overflow-y: hidden; }
+RouletteTable { width: 84; height: 15; }
+#table-layout { width: 84; height: 9; }
 #number-grid { grid-size: 12 3; grid-columns: 6; grid-rows: 3; width: 72; height: 9; }
 RouletteTable Button { width: 6; min-width: 6; max-width: 6; height: 3; margin: 0; padding: 0; border: solid #415564; color: #FFFFFF; }
-RouletteTable Button.red { background: #A92F43; }
-RouletteTable Button.black { background: #121D27; }
-RouletteTable Button.green { background: #17684E; height: 9; }
+#roulette-table Button.red { background: #A92F43; }
+#roulette-table Button.black { background: #121D27; }
+#roulette-table Button.green { background: #17684E; height: 9; }
 RouletteTable Button:hover, RouletteTable Button:focus { border: heavy #F5D58C; tint: #F5D58C 15%; }
 RouletteTable Button.selected { border: double #F5D58C; text-style: bold reverse; }
 #bet-form { height: auto; width: 76; max-width: 95%; }
@@ -279,8 +279,7 @@ RouletteTable Button.selected { border: double #F5D58C; text-style: bold reverse
 #roulette-wheel { width: 75; min-width: 75; max-width: 75; height: 31; border: round #B99755; content-align: center middle; background: #080D14; }
 
 #outside-bets { width: 72; height: 3; margin-left: 6; }
-#outside-bets Button { width: 18; min-width: 18; max-width: 18; }
-#outside-bets Button.even, #outside-bets Button.odd { background: #17684E; }
+#outside-bets Button { width: 12; min-width: 12; max-width: 12; }
 
 /* Multi-bet draft and accepted bets */
 #draft-selection, #draft-cost { height: auto; min-height: 1; color: #F5D58C; padding: 0 1; }
@@ -299,3 +298,9 @@ RouletteTable Button.selected { border: double #F5D58C; text-style: bold reverse
 Screen.spinning #content, Screen.spinning Header { display: none; }
 Screen.spinning #spin-view { display: block; }
 #spinning-bets { width: 76; max-width: 95%; height: auto; padding: 1 2; border: round #A58B58; background: #17232D; color: #F5D58C; }
+
+#column-bets { grid-size: 1 3; grid-rows: 3; width: 6; height: 9; }
+#dozen-bets { width: 72; height: 3; margin-left: 6; }
+#dozen-bets Button { width: 24; min-width: 24; max-width: 24; }
+#roulette-table Button.group, #roulette-table Button.low, #roulette-table Button.high, #roulette-table Button.even, #roulette-table Button.odd { background: #518241; }
+#select_bet_group { display: none; }
