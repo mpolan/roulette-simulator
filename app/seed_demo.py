@@ -39,16 +39,24 @@ def red_rounds(count: int, wins: int, amount: int) -> list[tuple[int, list[Bet]]
 
 def demo_scenarios() -> list[tuple[str, list[tuple[int, list[Bet]]]]]:
     multi_bets = [Bet(10, BetType.EVEN), Bet(10, BetType.RED), Bet(5, BetType.STRAIGHT, 7)]
+    
     return [
-        ("Michal", red_rounds(30, 20, 25)),
-        ("Maciek", red_rounds(18, 14, 50)),
+        ("Michal", red_rounds(100, 80, 300)),
+        ("Maciek", red_rounds(80, 59, 150)),
         ("Kamil", red_rounds(60, 29, 10)),
-        ("Gniewko", [(number, multi_bets) for number in (7, 2, 18, 0, 21, 32, 9, 14, 3, 26) * 2]),
-        ("Tomek", red_rounds(12, 10, 25)),
-        ("Kubson", [(number, [Bet(10, BetType.STRAIGHT, 17)]) for number in (17, 2, 0, 24, 11, 36)]),
+        ("Gniewko", [
+            (number, multi_bets)
+            for number in (7, 2, 18, 0, 21, 32, 9, 14, 3, 26) * 5
+        ]),
+        ("Tomek", red_rounds(45, 33, 100)),
+        ("Kubson", [
+            (number, [Bet(10, BetType.STRAIGHT, 17)])
+            for number in (17, 2, 0, 24, 11, 36) * 8
+        ]),
         ("Gdynianin", red_rounds(10, 0, 100)),
         ("Nowy Gracz", []),
     ]
+
 
 
 def seed_demo(reset: bool = False) -> None:

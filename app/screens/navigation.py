@@ -91,13 +91,13 @@ class MainMenu(Screen):
             yield Static("MENU GŁÓWNE", id="menu-subtitle")
             yield Static("", id="active-player", markup=False)
             yield Button("Gra", id="menu-play")
-            yield Button("Sklep", id="menu-shop", disabled=True)
+            yield Button("Sklep", id="menu-shop")
             yield Button("Statystyki", id="menu-stats")
             yield Button("Leaderboard", id="menu-leaderboard")
             yield Button("Ustawienia", id="menu-settings", disabled=True)
             yield Button("Zmień profil", id="menu-profile")
             yield Button("Wyjdź", id="menu-exit")
-            yield Static("Sklep i ustawienia wkrótce", id="menu-note")
+            yield Static("Ustawienia wkrótce", id="menu-note")
 
     def on_screen_resume(self) -> None:
         if self.app.session is not None:
@@ -111,6 +111,10 @@ class MainMenu(Screen):
     @on(Button.Pressed, "#menu-play")
     def play(self) -> None:
         self.app.play()
+
+    @on(Button.Pressed, "#menu-shop")
+    def shop(self) -> None:
+        self.app.show_shop()
 
     @on(Button.Pressed, "#menu-stats")
     def statistics(self) -> None:
