@@ -25,6 +25,110 @@ Screen {
 
 /* ==================== HEADER ==================== */
 
+MainMenu, ProfileScreen, StatisticsScreen, LeaderboardScreen {
+    align: center middle;
+    padding: 1 2;
+}
+
+.navigation-panel {
+    width: 60;
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
+    padding: 1 3;
+    border: double #B99755;
+    background: #121D27;
+}
+
+.navigation-panel Button, .navigation-panel Input, .navigation-panel Select {
+    width: 100%;
+    max-width: 100%;
+}
+
+.panel-title, .panel-subtitle, #active-player {
+    height: auto;
+    text-align: center;
+    color: #F5D58C;
+    margin-bottom: 1;
+}
+
+.panel-title, .section-title { text-style: bold; color: #F5D58C; height: auto; }
+.stats-section { height: auto; padding: 1; margin-bottom: 1; border: round #6D5938; background: #17232D; }
+.stats-section Static, #stats-player, #stats-balance, .error-message, .panel-hint { height: auto; }
+.error-message { color: #FF8E9B; margin-bottom: 1; }
+.panel-hint { color: #AEBBBE; margin-bottom: 1; }
+#stats-balance { color: #F5D58C; margin-bottom: 1; }
+#save-error { display: none; height: auto; padding: 0 1; background: #641E2B; }
+#save-error-message { height: auto; }
+#retry-save { width: 24; margin: 0; }
+
+#leaderboard-panel {
+    width: 108;
+    max-width: 100%;
+    height: 46;
+    max-height: 100%;
+    padding: 1 2;
+    border: double #B99755;
+    background: #121D27;
+}
+#leaderboard-panel Select, #leaderboard-panel Button { width: 100%; max-width: 100%; }
+#leaderboard-rules, #leaderboard-position, #leaderboard-message { height: auto; }
+#leaderboard-position { color: #F5D58C; margin-bottom: 1; }
+#leaderboard-message { color: #AEBBBE; margin: 1 0; }
+#leaderboard-message.error-message { color: #FF8E9B; }
+#leaderboard-table { height: 1fr; min-height: 3; background: #101923; color: #F0EDE5; }
+#leaderboard-table > .datatable--header { background: #243442; color: #F5D58C; text-style: bold; }
+#leaderboard-table > .datatable--odd-row { background: #17232D; }
+#leaderboard-table > .datatable--even-row { background: #101923; }
+#leaderboard-table > .datatable--cursor { background: #30463F; color: #F5D58C; }
+
+#main-menu {
+    width: 52;
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
+    padding: 1 3;
+    border: double #B99755;
+    background: #121D27;
+}
+
+#menu-title {
+    height: auto;
+    color: #F5D58C;
+    text-style: bold;
+    text-align: center;
+}
+
+#menu-subtitle {
+    height: auto;
+    margin-bottom: 1;
+    color: #AEBBBE;
+    text-align: center;
+}
+
+#main-menu Button {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 1 0;
+}
+
+#menu-play {
+    background: #194B40;
+    color: #DDFCED;
+    border: tall #38B995;
+}
+
+#menu-play:hover, #menu-play:focus {
+    background: #24735A;
+    border: double #F5D58C;
+}
+
+#menu-note {
+    height: auto;
+    color: #AEBBBE;
+    text-align: center;
+}
+
 Header {
     background: #121D27;
     color: #F5D58C;
@@ -321,6 +425,9 @@ RouletteTable Button.has-chips { border: double #F5D58C; }
 
 /* Balance follows the same centered stage as the table. */
 #balance-row { width: 116; max-width: 100%; height: 3; align-horizontal: center; }
+#back-to-menu { width: 20; min-width: 18; height: 3; margin: 0 1 0 0; background: #641E2B; color: #F5D58C; border: tall #B99755; }
+#back-to-menu:hover, #back-to-menu:focus { background: #812738; border: double #F5D58C; }
+#balance-row #balance { width: 1fr; max-width: 76; }
 #chip-picker { grid-size: 3 2; grid-columns: 11; grid-rows: 5; width: 33; height: 10; }
 #chip-picker ChipButton { width: 11; min-width: 11; max-width: 11; height: 5; margin: 0; padding: 0; border: none; background: transparent; tint: transparent; background-tint: transparent; }
 #chip-picker ChipButton:focus, #chip-picker ChipButton:hover { text-style: bold; }

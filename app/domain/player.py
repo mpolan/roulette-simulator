@@ -1,8 +1,8 @@
 
 class Player():
     def __init__(self, name:str="Gracz", balance:int=1000):
-        if balance <= 0:
-            raise ValueError("Balance must be greater than 0")
+        if balance < 0:
+            raise ValueError("Balance must be greater or equal than 0")
         self.name = name
         self.balance = balance
 
