@@ -25,10 +25,42 @@ Screen {
 
 /* ==================== HEADER ==================== */
 
-MainMenu {
+MainMenu, ProfileScreen, StatisticsScreen {
     align: center middle;
     padding: 1 2;
 }
+
+.navigation-panel {
+    width: 60;
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
+    padding: 1 3;
+    border: double #B99755;
+    background: #121D27;
+}
+
+.navigation-panel Button, .navigation-panel Input, .navigation-panel Select {
+    width: 100%;
+    max-width: 100%;
+}
+
+.panel-title, .panel-subtitle, #active-player {
+    height: auto;
+    text-align: center;
+    color: #F5D58C;
+    margin-bottom: 1;
+}
+
+.panel-title, .section-title { text-style: bold; color: #F5D58C; height: auto; }
+.stats-section { height: auto; padding: 1; margin-bottom: 1; border: round #6D5938; background: #17232D; }
+.stats-section Static, #stats-player, #stats-balance, .error-message, .panel-hint { height: auto; }
+.error-message { color: #FF8E9B; margin-bottom: 1; }
+.panel-hint { color: #AEBBBE; margin-bottom: 1; }
+#stats-balance { color: #F5D58C; margin-bottom: 1; }
+#save-error { display: none; height: auto; padding: 0 1; background: #641E2B; }
+#save-error-message { height: auto; }
+#retry-save { width: 24; margin: 0; }
 
 #main-menu {
     width: 52;
