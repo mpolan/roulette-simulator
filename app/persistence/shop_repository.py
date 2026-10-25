@@ -26,7 +26,7 @@ class ShopRepository:
             )
             return cursor.fetchone() is not None
 
-    def purchase_badge(self, player_id: int, badge: Badge) -> PurchasedBadge:
+    def purchase_badge(self, player_id: int, badge: Badge) -> tuple[PurchasedBadge, int]:
         if type(badge.price) is not int or badge.price <= 0:
             raise ValueError("Badge price must be a positive integer")
 
@@ -86,4 +86,4 @@ class ShopRepository:
                 badge_id=purchase["badge_id"],
                 price_paid=purchase["price_paid"],
                 purchased_at=purchase["purchased_at"],
-            )
+            ), new_balance

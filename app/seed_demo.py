@@ -57,15 +57,16 @@ def seed_demo(reset: bool = False) -> None:
     with database.get_connection() as conn:
         occupied = any(
             conn.execute(f"SELECT EXISTS(SELECT 1 FROM {table})").fetchone()[0]
-            for table in ("players", "rounds", "round_bets")
+            for table in ("players", "rounds", "round_bets", "player_badges")
         )
         if occupied and not reset:
             raise ValueError("Baza zawiera dane. Użyj --reset, aby usunąć WSZYSTKIE dane i odtworzyć demo, lub --db, aby wybrać inny plik.")
         if reset:
+            conn.execute("DELETE FROM player_badges")
             conn.execute("DELETE FROM round_bets")
             conn.execute("DELETE FROM rounds")
             conn.execute("DELETE FROM players")
-            conn.execute("DELETE FROM sqlite_sequence WHERE name IN ('players', 'rounds', 'round_bets')")
+            conn.execute("DELETE FROM sqlite_sequence WHERE name IN ('players', 'rounds', 'round_bets', 'player_badges')")
 
         start = datetime(2026, 10, 1, 18, 0)
         for profile_index, (name, planned_rounds) in enumerate(demo_scenarios()):
