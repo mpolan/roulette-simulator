@@ -86,3 +86,15 @@ def init_db() -> None:
                 FOREIGN KEY (round_id) REFERENCES rounds(id)
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS player_badges (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL,
+                badge_id TEXT NOT NULL,
+                price_paid INTEGER NOT NULL CHECK (price_paid > 0),
+                purchased_at TEXT DEFAULT CURRENT_TIMESTAMP,
+
+                FOREIGN KEY (player_id) REFERENCES players(id),
+                UNIQUE (player_id, badge_id)
+            )
+        """)
