@@ -57,3 +57,9 @@ Desktop.ini
 # === Local Data ===
 *.sqlite3
 *.db
+
+# === Build Data ===
+BUILD.md
+build.ps1
+ObsidianRoyale.spec
+requirements-build.txt
