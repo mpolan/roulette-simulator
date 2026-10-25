@@ -25,7 +25,7 @@ Screen {
 
 /* ==================== HEADER ==================== */
 
-MainMenu, ProfileScreen, StatisticsScreen, LeaderboardScreen {
+MainMenu, ProfileScreen, StatisticsScreen, LeaderboardScreen, ShopScreen {
     align: center middle;
     padding: 1 2;
 }
@@ -61,6 +61,30 @@ MainMenu, ProfileScreen, StatisticsScreen, LeaderboardScreen {
 #save-error { display: none; height: auto; padding: 0 1; background: #641E2B; }
 #save-error-message { height: auto; }
 #retry-save { width: 24; margin: 0; }
+
+#shop-panel { width: 76; max-width: 100%; height: auto; max-height: 100%; padding: 1 2; border: double #B99755; background: #121D27; scrollbar-gutter: stable; }
+#shop-player, #shop-balance, #shop-message { height: auto; margin-bottom: 1; }
+#shop-message { display: none; }
+#shop-player { text-align: center; color: #F0EDE5; }
+#shop-balance { text-align: center; text-style: bold; color: #F5D58C; }
+.shop-actions { height: 3; margin-bottom: 1; }
+.shop-actions Button { width: 1fr; min-width: 0; max-width: 100%; margin: 0; }
+#shop-refresh { margin-right: 1; }
+.shop-success { color: #72F5BA; }
+.badge-card { width: 100%; height: auto; padding: 1 2; margin-bottom: 1; border: round #A58B58; background: #17232D; }
+.badge-card Static { height: auto; }
+.badge-title { color: #F5D58C; text-style: bold; margin-bottom: 1; }
+.badge-description { color: #AEBBBE; margin-bottom: 1; }
+.badge-price { color: #F5D58C; }
+.badge-state { color: #AEBBBE; margin-bottom: 1; }
+.badge-card.owned { border: round #38B995; }
+.badge-card.owned .badge-state { color: #72F5BA; text-style: bold; }
+.badge-card .buy-badge { width: 100%; max-width: 100%; margin: 0; background: #194B40; color: #DDFCED; border: tall #38B995; }
+.badge-card .buy-badge:hover, .badge-card .buy-badge:focus { background: #24735A; border: double #F5D58C; }
+.badge-card .buy-badge:disabled { background: #252C33; color: #69747A; border: tall #39424A; }
+#stats-badges { color: #72F5BA; }
+#stats-badges.empty-collection { color: #AEBBBE; }
+#stats-badges.error-message { color: #FF8E9B; }
 
 #leaderboard-panel {
     width: 108;

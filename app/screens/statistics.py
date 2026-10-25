@@ -6,6 +6,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalScroll
 from textual.screen import Screen
 from textual.widgets import Button, Static
+from widgets.badge_label import badge_label
 
 
 class StatisticsScreen(Screen):
@@ -30,7 +31,12 @@ class StatisticsScreen(Screen):
             with Vertical(classes="stats-section"):
                 yield Static("SKUTECZNOŚĆ", classes="section-title")
                 yield Static("", id="stats-rates")
-            yield Static("Saldo dotyczy ostatniej rozliczonej rundy. Aktywne zakłady nie zmieniają zapisanej historii.", classes="panel-hint")
+            with Vertical(classes="stats-section"):
+                yield Static("KOLEKCJA ODZNAK", classes="section-title")
+                yield Static("", id="stats-badge-count")
+                yield Static("", id="stats-badges", markup=False)
+                yield Static("", id="stats-shop-spent")
+            yield Static("Zapisane saldo uwzględnia rozliczone rundy i zakupy w sklepie. Aktywne zakłady nie zmieniają zapisanej historii.", classes="panel-hint")
             yield Static("", id="stats-message", classes="error-message", markup=False)
             yield Button("Odśwież", id="stats-refresh")
             yield Button("Powrót do menu", id="stats-back")
@@ -64,6 +70,25 @@ class StatisticsScreen(Screen):
         self.query_one("#stats-rates", Static).update(
             f"Rundy z zyskiem: {stats.win_rate:.2f}%\nWygrane zakłady: {stats.bet_win_rate:.2f}%"
         )
+        self.refresh_collection()
+
+    def refresh_collection(self) -> None:
+        collection = self.query_one("#stats-badges", Static)
+        try:
+            badges = self.app.shop.get_owned_badges(self.player_id)
+            spent = self.app.shop.get_total_spent(self.player_id)
+        except (sqlite3.Error, OSError, LookupError, ValueError) as error:
+            collection.add_class("error-message")
+            collection.update(f"Nie można odczytać kolekcji: {error}")
+            self.query_one("#stats-badge-count", Static).update("Liczba odznak: —")
+            self.query_one("#stats-shop-spent", Static).update("Wydano w sklepie: —")
+            return
+        collection.remove_class("error-message")
+        collection.set_class(not badges, "empty-collection")
+        collection.update(Text("\n").join(badge_label(badge) for badge in badges)
+                          if badges else "Kolekcja jest pusta. Odznaki znajdziesz w Prestige Shop.")
+        self.query_one("#stats-badge-count", Static).update(f"Posiadane odznaki: {len(badges)}")
+        self.query_one("#stats-shop-spent", Static).update(f"Wydano w sklepie: {spent}$")
 
     @on(Button.Pressed, "#stats-back")
     def action_back(self) -> None:

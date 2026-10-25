@@ -1,11 +1,17 @@
 
 import sqlite3
+import shutil
+import sys
 from pathlib import Path
 from contextlib import contextmanager
 from typing import Iterator
 
 
-DB_PATH = Path(__file__).resolve().parents[2] / "data" / "roulette.db"
+DB_PATH = (
+    Path(sys.executable).resolve().parent / "data" / "roulette.db"
+    if getattr(sys, "frozen", False)
+    else Path(__file__).resolve().parents[2] / "data" / "roulette.db"
+)
 
 
 @contextmanager
@@ -27,6 +33,23 @@ def get_connection() -> Iterator[sqlite3.Connection]:
 
 
 def init_db() -> None:
+    # One-file resources live in a temporary directory; save progress beside EXE.
+    if getattr(sys, "frozen", False) and not DB_PATH.exists():
+        demo_path = Path(sys._MEIPASS) / "demo" / "roulette.db"
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        if demo_path.is_file():
+            try:
+                target = DB_PATH.open("xb")
+            except FileExistsError:
+                pass
+            else:
+                try:
+                    with target, demo_path.open("rb") as source:
+                        shutil.copyfileobj(source, target)
+                except Exception:
+                    DB_PATH.unlink(missing_ok=True)
+                    raise
+
     with get_connection() as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS players (
@@ -61,5 +84,17 @@ def init_db() -> None:
                 payout INTEGER NOT NULL CHECK (payout >= 0),
 
                 FOREIGN KEY (round_id) REFERENCES rounds(id)
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS player_badges (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL,
+                badge_id TEXT NOT NULL,
+                price_paid INTEGER NOT NULL CHECK (price_paid > 0),
+                purchased_at TEXT DEFAULT CURRENT_TIMESTAMP,
+
+                FOREIGN KEY (player_id) REFERENCES players(id),
+                UNIQUE (player_id, badge_id)
             )
         """)

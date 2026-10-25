@@ -14,6 +14,10 @@ class GameSession:
         self._pending_balance: int | None = None
 
     @property
+    def player_id(self) -> int:
+        return self._player_id
+
+    @property
     def game(self) -> Game:
         return self._game
 
