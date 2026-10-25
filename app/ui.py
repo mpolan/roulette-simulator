@@ -2,6 +2,7 @@ from rich.text import Text
 from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Grid, Horizontal, HorizontalScroll, Vertical, VerticalScroll
+from textual.screen import Screen
 from textual.widgets import Button, Header, Input, Select, Static
 
 from domain.bet import Bet, BetType
@@ -16,8 +17,31 @@ from widgets.roulette_wheel import RouletteWheelView
 BET_TYPE = {kind.name: kind for kind in BetType}
 
 
+class MainMenu(Screen):
+    """Start screen with placeholders for the remaining application sections."""
+
+    def compose(self) -> ComposeResult:
+        with VerticalScroll(id="main-menu"):
+            yield Static("OBSIDIAN ROYALE", id="menu-title")
+            yield Static("MENU GŁÓWNE", id="menu-subtitle")
+            yield Button("Gra", id="menu-play")
+            yield Button("Sklep", id="menu-shop", disabled=True)
+            yield Button("Statystyki / Leaderboard", id="menu-stats", disabled=True)
+            yield Button("Ustawienia", id="menu-settings", disabled=True)
+            yield Button("Wyjdź", id="menu-exit", disabled=True)
+            yield Static("Pozostałe opcje wkrótce", id="menu-note")
+
+    def on_mount(self) -> None:
+        self.query_one("#menu-play", Button).focus()
+
+    @on(Button.Pressed, "#menu-play")
+    def play(self) -> None:
+        self.app.pop_screen()
+
+
 class RouletteApp(App):
     CSS_PATH = "ui.tcss"
+    BINDINGS = [("escape", "main_menu", "Menu główne")]
 
     def __init__(self) -> None:
         # Keep the casino palette even when Textual selects its ANSI theme.
@@ -31,11 +55,21 @@ class RouletteApp(App):
         self.title = "ROULETTE SIMULATOR"
         self.sub_title = "Obsidian Royale"
         self.apply_mode("CHIPS")
+        self.push_screen(MainMenu())
+
+    def action_main_menu(self) -> None:
+        if not self.animating and not isinstance(self.screen, MainMenu):
+            self.push_screen(MainMenu())
+
+    @on(Button.Pressed, "#back-to-menu")
+    def back_to_menu(self) -> None:
+        self.action_main_menu()
 
     def compose(self) -> ComposeResult:
         yield Header()
         with VerticalScroll(id="content"):
             with Horizontal(id="balance-row"):
+                yield Button("Powrót do menu", id="back-to-menu")
                 yield Static(f"Balance: {self.game.player.balance}$", id="balance")
             with HorizontalScroll(id="table-scroll"):
                 yield RouletteTable(self.game.wheel.pockets, id="roulette-table")
@@ -71,6 +105,7 @@ class RouletteApp(App):
             yield Static("", id="spinning-bets")
 
     def lock_betting(self, locked: bool) -> None:
+        self.query_one("#back-to-menu", Button).disabled = locked
         self.query_one("#bet-form").disabled = locked
         self.query_one("#betting-mode").disabled = locked
         self.query_one(RouletteTable).disabled = locked
