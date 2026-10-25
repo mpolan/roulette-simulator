@@ -7,6 +7,11 @@ PAYOUT_MULTIPLIERS = {
     BetType.BLACK: 2,
     BetType.EVEN: 2,
     BetType.ODD: 2,
+    BetType.LOW: 2,
+    BetType.HIGH: 2,
+
+    BetType.DOZEN: 3,
+    BetType.COLUMN: 3,
 }
 
 def is_even(n: int) -> bool:
@@ -31,6 +36,26 @@ def resolve_bet(spin_result: Pocket, bet: Bet) -> bool:
         return number != 0 and is_even(number)
     elif bet_type == BetType.ODD:
         return number != 0 and not is_even(number)
+    
+    elif bet_type == BetType.LOW:
+        return number in range(1, 18 + 1)
+    elif bet_type == BetType.HIGH:
+        return number in range(19, 36 + 1)
+    
+    elif bet_type == BetType.DOZEN:
+        if selection == 1:
+            return number in range(1, 12 + 1)
+        if selection == 2:
+            return number in range(13, 24 + 1)
+        if selection == 3:
+            return number in range(25, 36 + 1)
+    elif bet_type == BetType.COLUMN:
+        if selection == 1:
+            return number in [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34]
+        if selection == 2:
+            return number in [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35]
+        if selection == 3:
+            return number in [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36]
     
     return False
 

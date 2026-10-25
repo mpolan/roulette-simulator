@@ -1,0 +1,326 @@
+
+/* =========================================================
+   OBSIDIAN ROYALE
+   European Roulette — Textual TUI
+   ========================================================= */
+
+
+/* ==================== FOUNDATION ==================== */
+
+Screen {
+    layout: vertical;
+    align: center top;
+
+    background: #080D14;
+    color: #F0EDE5;
+
+    padding: 0;
+    overflow-y: auto;
+
+    scrollbar-background: #101923;
+    scrollbar-color: #A58B58;
+    scrollbar-color-hover: #E8C477;
+}
+
+
+/* ==================== HEADER ==================== */
+
+Header {
+    background: #121D27;
+    color: #F5D58C;
+
+    text-style: bold;
+    border-bottom: heavy #B99755;
+
+    height: 2;
+}
+
+Footer {
+    background: #121D27;
+    color: #AEBBBE;
+
+    border-top: solid #6D5938;
+    height: 1;
+}
+
+
+/* ==================== PLAYER BALANCE ==================== */
+
+#balance {
+    width: 76;
+    max-width: 95%;
+    height: 3;
+
+    margin: 0;
+    padding: 0 1;
+
+    background: #17232D;
+    color: #F7D78D;
+
+    border: double #B99755;
+    text-style: bold;
+    text-align: center;
+    content-align: center middle;
+}
+
+
+/* ==================== SPIN RESULT ==================== */
+
+#result {
+    width: 100%;
+    height: auto;
+    min-height: 3;
+
+    margin: 0;
+    padding: 0 1;
+
+    background: #101F23;
+    color: #F2E9D2;
+
+    border: round #3C8E77;
+
+    text-style: bold;
+    text-align: center;
+    content-align: center middle;
+}
+
+/* Winning spin */
+#result.win {
+    background: #10352C;
+    color: #72F5BA;
+    border: double #32D99C;
+}
+
+/* Losing spin */
+#result.loss {
+    background: #321A23;
+    color: #FF8E9B;
+    border: double #DC5361;
+}
+
+/* ==================== FORM CONTROLS ==================== */
+
+Select,
+Input {
+    width: 76;
+    max-width: 95%;
+
+    height: 3;
+    margin: 0 0 1 0;
+
+    background: #18242F;
+    color: #F0EDE5;
+}
+
+
+/* ==================== BET TYPE SELECT ==================== */
+
+#select_bet_type {
+    height: 3;
+    background: #18242F;
+}
+
+#select_bet_type > SelectCurrent {
+    height: 3;
+
+    background: #18242F;
+    color: #F5D58C;
+
+    border: tall #775F3D;
+    padding: 0 2;
+
+    text-style: bold;
+
+    transition: background 200ms, color 200ms;
+}
+
+#select_bet_type:hover > SelectCurrent {
+    background: #243442;
+    border: tall #D5B36F;
+}
+
+#select_bet_type:focus > SelectCurrent {
+    background: #2A3540;
+    border: tall #F5D58C;
+}
+
+#select_bet_type > SelectOverlay {
+    background: #16232E;
+    color: #F0EDE5;
+
+    border: round #D5B36F;
+    max-height: 12;
+}
+
+
+/* ==================== AMOUNT INPUT ==================== */
+
+#input_bet_amount {
+    background: #18242F;
+    color: #F0EDE5;
+
+    border: tall #415564;
+
+    transition: background 200ms;
+}
+
+#input_bet_amount:hover {
+    background: #202E3A;
+    border: tall #8796A0;
+}
+
+#input_bet_amount:focus {
+    background: #273440;
+    border: tall #F5D58C;
+    color: #FFFFFF;
+}
+
+
+/* ==================== BUTTON FOUNDATION ==================== */
+
+Button {
+    width: 76;
+    max-width: 95%;
+
+    height: 3;
+    margin: 0 0 1 0;
+
+    text-style: bold;
+
+
+}
+
+
+/* ==================== CONFIRM BET ==================== */
+
+#bet {
+    background: #194B40;
+    color: #DDFCED;
+
+    border: tall #38B995;
+}
+
+#bet:hover {
+    background: #24735A;
+    color: #FFFFFF;
+
+    border: tall #75EFC2;
+}
+
+#bet:focus {
+    background: #226D54;
+    color: #FFFFFF;
+
+    border: double #A1FFCF;
+}
+
+
+/* ==================== SPIN BUTTON ==================== */
+
+#spin {
+    height: 3;
+
+    margin: 0 0 1 0;
+
+    background: #A92F43;
+    color: #FFF0DC;
+
+    border: double #E8C477;
+
+    text-style: bold;
+}
+
+#spin:hover {
+    background: #DA4259;
+    color: #FFFFFF;
+
+    border: double #FFE4A5;
+}
+
+#spin:focus {
+    background: #C8374F;
+    color: #FFFFFF;
+
+    border: double #FFE4A5;
+}
+
+
+/* ==================== DISABLED STATES ==================== */
+
+Button:disabled {
+    background: #252C33;
+    color: #69747A;
+
+    border: tall #39424A;
+}
+
+Input:disabled {
+    background: #121920;
+    color: #6D777E;
+
+    border: tall #303941;
+}
+
+/* Interactive casino layout */
+#content { height: 1fr; align-horizontal: center; padding: 0 1; scrollbar-gutter: stable; }
+#table-scroll { width: 100%; max-width: 116; height: 27; overflow-x: auto; overflow-y: hidden; align-horizontal: center; }
+RouletteTable { width: 112; height: 25; }
+#table-layout { width: 112; height: 15; }
+#number-grid { grid-size: 12 3; grid-columns: 8; grid-rows: 5; width: 96; height: 15; }
+RouletteTable Button { width: 8; min-width: 8; max-width: 8; height: 5; margin: 0; padding: 0; border: solid #415564; color: #FFFFFF; }
+#roulette-table Button.red { background: #A92F43; }
+#roulette-table Button.black { background: #121D27; }
+#roulette-table Button.green { background: #17684E; height: 15; }
+RouletteTable Button:hover, RouletteTable Button:focus { border: heavy #F5D58C; tint: #F5D58C 15%; }
+RouletteTable Button.selected { border: double #F5D58C; text-style: bold reverse; }
+#bet-form { display: none; height: auto; width: 100%; }
+#bet-form Input, #bet-form Select, #bet-form Button { width: 100%; max-width: 100%; margin: 0; }
+#roulette-wheel { width: 75; min-width: 75; max-width: 75; height: 31; border: round #B99755; content-align: center middle; background: #080D14; }
+
+#outside-bets { width: 96; height: 5; margin-left: 8; }
+#outside-bets Button { width: 16; min-width: 16; max-width: 16; }
+
+/* Multi-bet draft and accepted bets */
+#draft-selection, #draft-cost { height: auto; min-height: 1; color: #F5D58C; padding: 0 1; }
+#bet-cart { width: 100%; height: auto; border: round #A58B58; background: #17232D; margin: 0; }
+.cart-title { height: 1; text-style: bold; color: #F5D58C; text-align: center; }
+.cart-empty, .cart-total { height: auto; min-height: 1; padding: 0 1; }
+.cart-total { color: #F5D58C; }
+.cart-row { height: 3; }
+.cart-row Static { width: 1fr; height: 3; content-align: left middle; padding: 0 1; }
+#bet-cart .remove-bet { width: 5; min-width: 5; max-width: 5; height: 3; margin: 0; background: #A92F43; color: #FFFFFF; }
+
+#wheel-scroll { width: 100%; max-width: 78; height: 33; overflow-x: auto; overflow-y: hidden; align-horizontal: center; }
+
+/* Dedicated spin view: no form, balance or early settlement information. */
+#spin-view { display: none; height: 1fr; padding: 0 1; align-horizontal: center; }
+Screen.spinning #content, Screen.spinning Header { display: none; }
+Screen.spinning #spin-view { display: block; }
+#spinning-bets { width: 76; max-width: 95%; height: auto; padding: 1 2; border: round #A58B58; background: #17232D; color: #F5D58C; }
+
+#column-bets { grid-size: 1 3; grid-rows: 5; width: 8; height: 15; }
+#dozen-bets { width: 96; height: 5; margin-left: 8; }
+#dozen-bets Button { width: 32; min-width: 32; max-width: 32; }
+#roulette-table Button.group, #roulette-table Button.low, #roulette-table Button.high, #roulette-table Button.even, #roulette-table Button.odd { background: #518241; }
+#select_bet_group { display: none; }
+
+/* Chip controls and compact three-line field labels. */
+#betting-mode { width: 100%; height: auto; }
+#betting-mode Select { width: 100%; max-width: 100%; margin: 0; }
+#chip-controls { height: auto; }
+#chip-controls Static { height: auto; color: #F5D58C; }
+RouletteTable Button.has-chips { border: double #F5D58C; }
+
+/* Fixed table stage; changing bets and results only scroll inside the dashboard. */
+#dashboard { width: 116; max-width: 100%; height: 22; }
+#bet-controls { width: 38; height: 100%; padding: 0 1; scrollbar-gutter: stable; }
+#bet-controls #spin { width: 100%; max-width: 100%; margin-top: 1; }
+#round-info { width: 1fr; height: 100%; }
+#cart-scroll { height: 11; scrollbar-gutter: stable; }
+#result-scroll { height: 11; scrollbar-gutter: stable; }
+
+/* Balance follows the same centered stage as the table. */
+#balance-row { width: 116; max-width: 100%; height: 3; align-horizontal: center; }
+#chip-picker { grid-size: 3 2; grid-columns: 11; grid-rows: 5; width: 33; height: 10; }
+#chip-picker ChipButton { width: 11; min-width: 11; max-width: 11; height: 5; margin: 0; padding: 0; border: none; background: transparent; tint: transparent; background-tint: transparent; }
+#chip-picker ChipButton:focus, #chip-picker ChipButton:hover { text-style: bold; }
