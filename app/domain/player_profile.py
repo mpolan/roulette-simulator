@@ -4,3 +4,4 @@ from dataclasses import dataclass
 class PlayerProfile:
     id: int
     name: str
+    balance: int

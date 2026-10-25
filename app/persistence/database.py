@@ -31,7 +31,8 @@ def init_db() -> None:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS players (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE
+                name TEXT NOT NULL UNIQUE,
+                balance INTEGER NOT NULL DEFAULT 1000 CHECK(balance >= 0)
             )
         """)
                 
