@@ -25,7 +25,7 @@ Screen {
 
 /* ==================== HEADER ==================== */
 
-MainMenu, ProfileScreen, StatisticsScreen {
+MainMenu, ProfileScreen, StatisticsScreen, LeaderboardScreen {
     align: center middle;
     padding: 1 2;
 }
@@ -61,6 +61,26 @@ MainMenu, ProfileScreen, StatisticsScreen {
 #save-error { display: none; height: auto; padding: 0 1; background: #641E2B; }
 #save-error-message { height: auto; }
 #retry-save { width: 24; margin: 0; }
+
+#leaderboard-panel {
+    width: 108;
+    max-width: 100%;
+    height: 46;
+    max-height: 100%;
+    padding: 1 2;
+    border: double #B99755;
+    background: #121D27;
+}
+#leaderboard-panel Select, #leaderboard-panel Button { width: 100%; max-width: 100%; }
+#leaderboard-rules, #leaderboard-position, #leaderboard-message { height: auto; }
+#leaderboard-position { color: #F5D58C; margin-bottom: 1; }
+#leaderboard-message { color: #AEBBBE; margin: 1 0; }
+#leaderboard-message.error-message { color: #FF8E9B; }
+#leaderboard-table { height: 1fr; min-height: 3; background: #101923; color: #F0EDE5; }
+#leaderboard-table > .datatable--header { background: #243442; color: #F5D58C; text-style: bold; }
+#leaderboard-table > .datatable--odd-row { background: #17232D; }
+#leaderboard-table > .datatable--even-row { background: #101923; }
+#leaderboard-table > .datatable--cursor { background: #30463F; color: #F5D58C; }
 
 #main-menu {
     width: 52;

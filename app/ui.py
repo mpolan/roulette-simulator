@@ -3,9 +3,11 @@ from textual.app import App
 from persistence.player_repository import PlayerRepository
 from persistence.round_repository import RoundRepository
 from screens.game import GameScreen
+from screens.leaderboard import LeaderboardScreen
 from screens.navigation import MainMenu, ProfileScreen
 from screens.statistics import StatisticsScreen
 from services.game_session import GameSession
+from services.leaderboard_service import LeaderboardService
 from services.session_factory import create_game_session
 from services.stats_service import StatsService
 
@@ -17,6 +19,7 @@ class RouletteApp(App):
         super().__init__(ansi_color=False)
         self.players = PlayerRepository()
         self.stats = StatsService(RoundRepository())
+        self.leaderboard = LeaderboardService(self.players, self.stats)
         self.session: GameSession | None = None
         self.player_id: int | None = None
 
@@ -49,6 +52,10 @@ class RouletteApp(App):
     def show_statistics(self) -> None:
         if self.player_id is not None:
             self.push_screen(StatisticsScreen(self.player_id))
+
+    def show_leaderboard(self) -> None:
+        if self.player_id is not None:
+            self.push_screen(LeaderboardScreen(self.player_id))
 
     def action_quit(self) -> None:
         if self.session is not None and (
