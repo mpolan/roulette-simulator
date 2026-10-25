@@ -22,12 +22,18 @@ class PlayerRepository:
             
             return PlayerProfile(player["id"], player["name"], player["balance"])
     
-    def add_player(self, name: str) -> PlayerProfile:
+    def add_player(self, name: str, balance: int | None = None) -> PlayerProfile:
         with get_connection() as conn:
-            cursor = conn.execute(
-                "INSERT INTO players (name) VALUES (?)",
-                (name,)
-            )
+            if balance is None:
+                cursor = conn.execute(
+                    "INSERT INTO players (name) VALUES (?)",
+                    (name,)
+                )
+            else:
+                cursor = conn.execute(
+                    "INSERT INTO players (name, balance) VALUES (?, ?)",
+                    (name, balance)
+                )
 
             player_id = cursor.lastrowid
 

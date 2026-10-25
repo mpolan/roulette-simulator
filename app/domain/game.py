@@ -12,8 +12,8 @@ class Game:
     CHIP_VALUES = (5, 10, 25, 50, 100)
     MAX_CHIPS_PER_FIELD = 5
 
-    def __init__(self):
-        self.player = Player()
+    def __init__(self, player: Player):
+        self.player = player
         self._bets: list[Bet] = []
         self._chip_stacks: dict[tuple[BetType, int | None], list[Bet]] = {}
         self.wheel = Wheel()

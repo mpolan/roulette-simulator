@@ -5,24 +5,53 @@ from domain.stored_round import StoredRound
 from .database import get_connection
 
 class RoundRepository:
-    def save_round(self, player_id: int, result: RoundResult) -> int:
+
+    def save_round(self, player_id: int, result: RoundResult, balance_after: int) -> int:
+        if balance_after < 0:
+            raise ValueError("Balance must be greater or equal to 0")
+
         with get_connection() as conn:
             cursor = conn.execute("""
-                INSERT INTO rounds (player_id, winning_number, total_stake, total_payout, net_profit) 
-                VALUES (?, ?, ?, ?, ?)""",
-                (player_id, result.pocket.number, result.total_stake, result.total_payout, result.net_profit)
-            )
+                INSERT INTO rounds (
+                    player_id, winning_number,
+                    total_stake, total_payout, net_profit
+                )
+                VALUES (?, ?, ?, ?, ?)
+            """, (
+                player_id, result.pocket.number,
+                result.total_stake, result.total_payout,
+                result.net_profit
+            ))
+
             round_id = cursor.lastrowid
 
             for bet_result in result.bet_results:
                 conn.execute("""
-                    INSERT INTO round_bets (round_id, bet_type, selection, amount, won, payout)
-                    VALUES (?, ?, ?, ?, ?, ?)""",
-                    (round_id, bet_result.bet.bet_type.value, bet_result.bet.selection,
-                     bet_result.bet.amount, bet_result.won, bet_result.payout)
-                )
+                    INSERT INTO round_bets (
+                        round_id, bet_type,
+                        selection, amount,
+                        won, payout
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (
+                    round_id, bet_result.bet.bet_type.value,
+                    bet_result.bet.selection,
+                    bet_result.bet.amount,
+                    bet_result.won,
+                    bet_result.payout
+                ))
+
+            cursor = conn.execute("""
+                UPDATE players
+                SET balance = ?
+                WHERE id = ?
+            """, (balance_after, player_id))
+
+            if cursor.rowcount == 0:
+                raise LookupError("Player with that id does not exist")
 
             return round_id
+
 
     def get_player_rounds(self, player_id: int) -> list[StoredRound]:
         with get_connection() as conn:
@@ -47,8 +76,8 @@ class RoundRepository:
             cursor = conn.execute("""
                 SELECT round_bets.id, round_bets.round_id,
                        bet_type, selection, amount, won, payout
-                FROM round_bets 
-                JOIN rounds 
+                FROM round_bets
+                JOIN rounds
                 ON rounds.id = round_bets.round_id
                 WHERE rounds.player_id = ?
                 ORDER BY rounds.id DESC, round_bets.id ASC""",
