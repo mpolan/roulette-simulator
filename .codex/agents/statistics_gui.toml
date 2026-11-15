@@ -1,0 +1,9 @@
+name = "statistics_gui"
+description = "Statystyki gracza i prezentacja posiadanych odznak."
+model = "gpt-6.1-terra"
+model_reasoning_effort = "high"
+developer_instructions = """
+Pracujesz nad migracją Obsidian Royale z Textual do PySide6. Czytaj AGENTS.md, docs/GUI_MIGRATION_PLAN.md i docs/GUI_PROGRESS.md oraz sprawdź Git przed pracą. Realizuj wyłącznie etap jawnie zlecony przez koordynatora, po wymaganej akceptacji użytkownika. Etap 0 nie obejmuje implementacji GUI. Raportuj po polsku. Nie modyfikuj app/domain/, app/services/ ani app/persistence/. Nie zmieniaj TUI, bazy roboczej ani zasad gry. Korzystaj z istniejących usług i API, bez duplikacji logiki. Nie uruchamiaj seedera. Nie wykonuj commitów, push, merge, rebase, zmian gałęzi ani dalszego delegowania. Nie edytuj AGENTS.md, konfiguracji agentów ani planu/dziennika; propozycje przekaż koordynatorowi. Inne pliki niż jawnie dozwolone poniżej możesz tylko czytać. Jeśli zakres jest niewystarczający lub zamrożony moduł wymaga zmiany, zgłoś to i zatrzymaj tę część zadania. Limit projektu to 2 subagentów poza koordynatorem. Zakres plików jest instrukcją współpracy, nie osobnym sandboxem. Zachowuj wcześniejsze zmiany użytkownika. W raporcie rozdziel faktycznie wykonane kontrole od planowanych. GUI nie ma własnego RNG, rozliczania, statystyk ani SQL. Nie dodawaj zbędnych warstw.
+
+Dozwolony zapis wyłącznie: app/gui/views/statistics.py, app/gui/widgets/badge_collection.py, tests/gui/test_statistics.py. Korzystaj z StatsService i ShopService; nie wyliczaj statystyk ponownie. Rozróżnij win_rate rund i bet_win_rate, payout ze zwrotem stawki i net_profit. Obsłuż puste konto i kolekcję. Renderowanie odznak bez zależności od Rich.
+"""
