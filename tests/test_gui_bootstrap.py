@@ -1,54 +1,48 @@
 """Smoke Qt offscreen: import, okno, pętla zdarzeń i błąd inicjalizacji."""
 
-import os
 import sqlite3
 
 import pytest
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QApplication, QLabel
+from PySide6.QtWidgets import QApplication
 
 from gui import application
 from persistence.player_repository import PlayerRepository
 
 
-@pytest.fixture(scope="module")
-def qt_app():
-    previous = os.environ.get("QT_QPA_PLATFORM")
-    os.environ["QT_QPA_PLATFORM"] = "offscreen"
-    app = application.create_application([])
-    yield app
-    app.closeAllWindows()
-    app.processEvents()
-    if previous is None:
-        os.environ.pop("QT_QPA_PLATFORM", None)
-    else:
-        os.environ["QT_QPA_PLATFORM"] = previous
+@pytest.fixture
+def qt_app(qapp):
+    return application.create_application([])
 
 
-def test_bootstrap_window_and_application_reuse(qt_app):
+def test_main_window_and_application_reuse(qt_app, wait_until):
     assert isinstance(qt_app, QApplication)
     assert application.create_application([]) is qt_app
-    window = application.create_bootstrap_window()
+    window = application.create_main_window()
     assert window.windowTitle() == "Obsidian Royale"
-    assert window.findChild(QLabel).text() == "Obsidian Royale"
+    assert window.stack.currentWidget() is window.profiles_view
+    assert "#080D14" in qt_app.styleSheet()
     window.show()
     qt_app.processEvents()
     assert window.isVisible()
     window.close()
+    wait_until(lambda: not window.isVisible())
 
 
 def test_run_initializes_isolated_database_and_enters_event_loop(qt_app, monkeypatch, isolated_db_path):
     assert not isolated_db_path.exists()
-    original_create_window = application.create_bootstrap_window
+    original_create_window = application.create_main_window
     windows = []
+    closer = QTimer()
 
     def create_and_close():
         window = original_create_window()
         windows.append(window)
-        QTimer.singleShot(0, window.close)
+        closer.timeout.connect(lambda: window.close() if not window.controller.busy else None)
+        closer.start(10)
         return window
 
-    monkeypatch.setattr(application, "create_bootstrap_window", create_and_close)
+    monkeypatch.setattr(application, "create_main_window", create_and_close)
     watchdog = QTimer()
     watchdog.setSingleShot(True)
     watchdog.timeout.connect(lambda: qt_app.exit(99))
@@ -57,6 +51,7 @@ def test_run_initializes_isolated_database_and_enters_event_loop(qt_app, monkeyp
         assert application.run([]) == 0
     finally:
         watchdog.stop()
+        closer.stop()
     assert len(windows) == 1
     assert not windows[0].isVisible()
     assert isolated_db_path.exists()
@@ -74,7 +69,7 @@ def test_database_failure_returns_error_without_opening_window(qt_app, monkeypat
         pytest.fail("Okno nie powinno powstać po błędzie inicjalizacji bazy")
 
     monkeypatch.setattr(application, "init_db", fail_init)
-    monkeypatch.setattr(application, "create_bootstrap_window", unexpected_window)
+    monkeypatch.setattr(application, "create_main_window", unexpected_window)
     monkeypatch.setattr(application.QMessageBox, "critical", lambda *args: messages.append(args))
     assert application.run([]) == 1
     assert len(messages) == 1
