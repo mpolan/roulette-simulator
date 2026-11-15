@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLabel,
 
 
 class MenuView(QWidget):
+    game_requested = Signal()
     change_profile_requested = Signal()
     exit_requested = Signal()
 
@@ -39,7 +40,12 @@ class MenuView(QWidget):
         self.balance_label.setTextFormat(Qt.TextFormat.PlainText)
         for widget in (title, subtitle, self.player_label, self.balance_label):
             content.addWidget(widget)
-        for text in ("Gra", "Sklep", "Statystyki", "Ranking", "Ustawienia"):
+        self.game_button = QPushButton("Gra")
+        self.game_button.setObjectName("gameButton")
+        self.game_button.setProperty("variant", "primary")
+        self.game_button.clicked.connect(self.game_requested)
+        content.addWidget(self.game_button)
+        for text in ("Sklep", "Statystyki", "Ranking", "Ustawienia"):
             button = QPushButton(text)
             button.setEnabled(False)
             button.setToolTip("Niedostępne w tej wersji")

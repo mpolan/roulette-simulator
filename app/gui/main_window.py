@@ -2,6 +2,8 @@ from PySide6.QtCore import QEvent, Qt, Slot
 from PySide6.QtWidgets import QMainWindow, QPushButton, QStackedWidget
 
 from gui.controllers.application_controller import ApplicationController
+from gui.controllers.game_controller import GameController
+from gui.views.game import GameView
 from gui.views.profiles import ProfilesView
 from gui.views.menu import MenuView
 
@@ -17,8 +19,11 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.stack)
         self.profiles_view = ProfilesView()
         self.menu_view = MenuView()
+        self.game_controller = GameController(self.controller, self)
+        self.game_view = GameView(self.game_controller)
         self.stack.addWidget(self.profiles_view)
         self.stack.addWidget(self.menu_view)
+        self.stack.addWidget(self.game_view)
         self._started = False
         self._shutdown_complete = False
         self.profiles_view.create_requested.connect(self.controller.create_profile)
@@ -27,9 +32,13 @@ class MainWindow(QMainWindow):
         self.profiles_view.back_requested.connect(self.show_menu)
         self.profiles_view.exit_requested.connect(self.close)
         self.menu_view.change_profile_requested.connect(self.show_profiles)
+        self.menu_view.game_requested.connect(self.show_game)
+        self.game_view.back_requested.connect(self.show_menu)
         self.menu_view.exit_requested.connect(self.close)
         self.controller.profiles_changed.connect(self.profiles_view.set_profiles)
         self.controller.session_changed.connect(self._session_changed)
+        self.game_controller.state_changed.connect(self._game_changed)
+        self.game_controller.error.connect(self.statusBar().showMessage)
         self.controller.busy_changed.connect(self._update_state)
         self.controller.error.connect(self._show_error)
         self.controller.shutdown_finished.connect(self._finish_close)
@@ -56,12 +65,18 @@ class MainWindow(QMainWindow):
         self.statusBar().clearMessage()
         self.profiles_view.name_input.clear()
         self.menu_view.set_session(session)
+        self.game_controller.set_session(session)
         self.show_menu()
         self._update_state()
 
     def _show_error(self, message):
         self.profiles_view.message.setText(message)
         self.statusBar().showMessage(message)
+
+    def _game_changed(self):
+        if self.controller.session is not None:
+            self.menu_view.set_session(self.controller.session)
+        self._update_state()
 
     def _update_state(self, *_):
         busy = self.controller.busy
@@ -71,6 +86,17 @@ class MainWindow(QMainWindow):
             self.controller.blocked_reason(), back_blocked=self.controller.navigation_blocked(),
         )
         self.menu_view.set_blocked(blocked, self.controller.blocked_reason())
+        self.menu_view.game_button.setEnabled(
+            self.controller.session is not None and not self.controller.navigation_blocked()
+        )
+
+    def show_game(self):
+        if self.controller.session is None or self.controller.navigation_blocked():
+            self.statusBar().showMessage(self.controller.blocked_reason())
+            return
+        self.game_controller.refresh()
+        self.stack.setCurrentWidget(self.game_view)
+        self.game_view.table.setFocus()
 
     def show_profiles(self):
         if self.controller.blocked():
@@ -93,7 +119,7 @@ class MainWindow(QMainWindow):
             return
         self.menu_view.set_session(self.controller.session)
         self.stack.setCurrentWidget(self.menu_view)
-        self.menu_view.change_button.setFocus()
+        self.menu_view.game_button.setFocus()
 
     def closeEvent(self, event):
         if self._shutdown_complete:
