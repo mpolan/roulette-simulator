@@ -1,4 +1,4 @@
-# Obsidian Royale — ręczne sprawdzenie Etapu 5
+# Obsidian Royale — ręczne sprawdzenie Etapu 6
 
 ## Uruchomienie
 
@@ -28,7 +28,7 @@ Normalny start korzysta z istniejącej `data/roulette.db`. Utworzone ręcznie pr
 2. Przejdź do wyboru profilu, a następnie wybierz **Powrót do menu** albo naciśnij **Esc**. Oczekiwane: menu tego samego gracza, bez tworzenia nowej sesji.
 3. Użyj **Tab** i **Shift+Tab** do przejścia po dostępnych kontrolkach. Przycisk można zatwierdzić **Spacją** lub **Enter**; pola nazwy i lista mają własną obsługę Enter.
 4. Po zmianie rozmiaru sprawdź czytelność. W menu przy małej wysokości lub długiej nazwie dostępne jest przewijanie, aby przycisk wyjścia pozostał osiągalny.
-5. **Gra** otwiera stół obstawiania, a **Statystyki** — statystyki i kolekcję aktywnego profilu. **Sklep**, **Ranking** i **Ustawienia** pozostają nieaktywne.
+5. **Gra** otwiera stół obstawiania, a **Statystyki** — statystyki i kolekcję aktywnego profilu. **Ranking** otwiera leaderboard. **Sklep** i **Ustawienia** pozostają nieaktywne.
 6. Zamknij aplikację przyciskiem **Wyjdź** i, po ponownym uruchomieniu, systemowym przyciskiem zamknięcia. Profile powinny pozostać dostępne po starcie.
 
 ## Blokady i zakres weryfikacji
@@ -92,7 +92,19 @@ Historyczne kontrole Etapu 3, w tym próby natywnego Qt i ograniczenia diagnozy 
 5. Przy błędzie odczytu pojawia się komunikat i możliwość ponownego odświeżenia. Poprzednie dane tego samego profilu pozostają do czasu udanego odczytu; test wymusza błąd na danych tymczasowych.
 6. Sprawdź czytelność przy 900 × 650 i 740 × 560; przewijaj zawartość w mniejszym oknie. Zakupy odznak w GUI należą do późniejszego etapu — tutaj wyświetlana jest tylko istniejąca kolekcja.
 
+## Ranking
+
+1. W menu wybierz **Ranking**. Domyślnie jest to Zysk netto. Sprawdź pozycję, nazwę, zysk, rundy, skuteczność rund z zyskiem, liczbę odznak i zapisane saldo. Symbole zakupionych odznak znajdują się przy nazwie; po najechaniu widać ich nazwy. Saldo i statystyki są zapisanymi danymi, niezależnymi od bieżących zakładów sesji.
+2. Zmień kryterium kolejno na liczbę rund, skuteczność i liczbę odznak. Kolejność pochodzi z serwisu: minimum jedna runda dla zysku/aktywności, minimum 10 dla skuteczności, minimum jedna kupiona odznaka dla kolekcjonerów. Remisy rozstrzyga identyfikator gracza. Zmiana kryterium aktualizuje ten sam ekran.
+3. Aktywny profil ma zielone tło, dopisek **(Ty)** i pozycję nad tabelą. Przy braku kwalifikacji pojawia się odpowiednia wskazówka. Pusty ranking podaje przyczynę i sposób dołączenia. Pierwsze trzy pozycje mają złote, srebrne i brązowe oznaczenia; dodatni/ujemny zysk jest zielony/czerwony.
+4. **Odśwież** ponawia odczyt. W razie błędu można spróbować ponownie; poprzedni wynik tego kryterium pozostaje widoczny z komunikatem. Po zmianie kryterium stare wiersze są czyszczone, aby nie przedstawiać ich jako nowego rankingu. Błąd odczytu wymuszają testy na bazie tymczasowej.
+5. **Tab/Shift+Tab** przechodzi między kontrolkami. Kryterium wybieraj strzałkami lub z listy, przyciski uruchamiaj **Enter/Spacją**, tabelę przewijaj myszą lub klawiaturą. **Powrót do menu/Esc** zachowuje tę samą sesję. Zmień profil i wejdź ponownie: wyróżnienie i pozycja mają odpowiadać nowemu graczowi.
+6. Sprawdź 900×650 i 740×560 oraz przewijanie przy wielu graczach. Przy zapisie, pending lub animacji obowiązują dotychczasowe blokady nawigacji. Zamykanie i anulowanie aktywnych zakładów działają jak wcześniej.
+
 ## Zrzuty kontrolne
+
+Etap 6: [ranking, 900 × 650](images/gui-stage6-leaderboard-900x650.png), natywny backend Qt Windows, wyłącznie demonstracyjne profile/rundy/zakupy na tymczasowej bazie. Obejrzano także 740 × 560.
+
 
 Etap 5: [statystyki i odznaki, 900 × 650](images/gui-stage5-statistics-900x650.png), natywny backend Qt Windows, profil demonstracyjny na tymczasowej bazie. Kontrola obejmowała też rozmiar 740 × 560; mniejszy widok ma przewijanie.
 
@@ -108,7 +120,7 @@ Zrzuty wykonano przez QWidget.grab() z natywnego backendu Qt Windows, na profilu
 ## Testy automatyczne
 
 ```powershell
-.\venv\Scripts\python.exe -X faulthandler -m pytest -q tests/gui/test_statistics.py tests/test_import_boundaries.py
+.\venv\Scripts\python.exe -X faulthandler -m pytest -q tests/gui/test_leaderboard.py tests/test_import_boundaries.py
 ```
 
 Testy przełączają ścieżkę SQLite na pliki tymczasowe; nie korzystają z roboczej bazy graczy.

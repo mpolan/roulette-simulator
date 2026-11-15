@@ -8,6 +8,7 @@ from persistence.shop_repository import ShopRepository
 from services.session_factory import create_game_session
 from services.stats_service import StatsService
 from services.shop_service import ShopService
+from services.leaderboard_service import LeaderboardService
 
 
 class _Worker(QObject):
@@ -19,6 +20,7 @@ class _Worker(QObject):
         self.session_factory = session_factory
         self.stats = StatsService(RoundRepository())
         self.shop = ShopService(ShopRepository())
+        self.leaderboard = LeaderboardService(self.players, self.stats, self.shop)
 
     @Slot(str, object)
     def execute(self, action, argument):
@@ -39,6 +41,8 @@ class _Worker(QObject):
                     raise LookupError("Profil nie istnieje.")
                 result = (profile, self.stats.get_player_stats(argument),
                           self.shop.get_owned_badges(argument), self.shop.get_total_spent(argument))
+            elif action == "leaderboard":
+                result = self.leaderboard.get_leaderboard(argument)
             else:
                 result = self.session_factory(argument)
             self.finished.emit(action, result, None, created)
@@ -55,6 +59,8 @@ class ApplicationController(QObject):
     round_finished = Signal(object, object)
     statistics_changed = Signal(object)
     statistics_error = Signal(str)
+    leaderboard_changed = Signal(object)
+    leaderboard_error = Signal(str)
     _request = Signal(str, object)
     _stop = Signal()
 
@@ -99,7 +105,7 @@ class ApplicationController(QObject):
         return ""
 
     def _submit(self, action, value=None):
-        if self._closing or self.busy or (action not in ("load", "spin", "retry", "statistics") and self.blocked()):
+        if self._closing or self.busy or (action not in ("load", "spin", "retry", "statistics", "leaderboard") and self.blocked()):
             return False
         self.busy = True
         self.busy_changed.emit(True)
@@ -129,6 +135,11 @@ class ApplicationController(QObject):
             return False
         return self._submit("statistics", self.session.player_id)
 
+    def load_leaderboard(self, sort_by="net_profit"):
+        if self.session is None or self.navigation_blocked():
+            return False
+        return self._submit("leaderboard", sort_by)
+
     def submit_round(self, retry=False):
         if self._closing or self.busy or self.animating or self.session is None:
             return False
@@ -148,6 +159,12 @@ class ApplicationController(QObject):
             self.busy_changed.emit(False)
             return
         self.busy_changed.emit(False)
+        if action == "leaderboard":
+            if exc is not None:
+                self.leaderboard_error.emit(f"Nie można odczytać rankingu: {exc}. Spróbuj odświeżyć.")
+            else:
+                self.leaderboard_changed.emit(result)
+            return
         if action == "statistics":
             if exc is not None:
                 self.statistics_error.emit(f"Nie można odczytać statystyk i kolekcji: {exc}")

@@ -3,18 +3,18 @@
 ## Stan i bramka akceptacji
 
 - Aktualizacja: 2026-11-15.
-- Aktualnie zaakceptowany ukończony etap: **Etap 4**, przez wiadomość `ZATWIERDZAM ETAP 4 — PRZEJDŹ DO ETAPU 5`.
-- Etap 5: **ukończony; oczekiwanie na akceptację wyniku**. Etapy 6–9 nierozpoczęte.
+- Aktualnie zaakceptowany ukończony etap: **Etap 5**, przez wiadomość `ZATWIERDZAM ETAP 5 — PRZEJDŹ DO ETAPU 6`.
+- Etap 6: **ukończony; oczekiwanie na akceptację wyniku**. Etapy 7–9 nierozpoczęte.
 - Po ręcznym sprawdzeniu użytkownik potwierdził działanie Etapu 3 i zlecił wyłącznie korektę zamykania GUI. Korekta opisana poniżej nie stanowi akceptacji Etapu 4.
 - Etap 0: ukończony i zaakceptowany.
 - Gałąź: `codex`; początkowy commit: `4ba0069f25eb652917a039f76c634fdd1d8d4072` (`Roulette MVP 3.0`). Początkowy status czysty, brak wcześniejszych zmian użytkownika.
 - Ostatni commit konfiguracji: `7c5bacfcebe0bf0af4fbbcc4d40d39e2a1e9de38` — `chore(gui): configure project agents` (13 plików: AGENTS i konfiguracja ról).
-- Ostatni commit poprzedniego etapu: `adc4dda` — koło i zapis rundy Etapu 4.
+- Ostatni commit poprzedniego etapu: `6f22e98` — statystyki i kolekcja odznak Etapu 5.
 - Ostatni commit implementacji Etapu 1: `69a187fd4395664903697f3ba23a7d13a008a1c3` — `feat(gui): bootstrap Qt and add baseline regressions`.
 - Ostatni commit implementacji Etapu 2: `99f2963cd7f82fbd8746b0bf3d94c578b473f110` — `feat(gui): add main window and player profiles`.
 - Ostatni commit implementacji Etapu 3: `e475c30ea7e0af58f324d6efddf26090bf11b52b` — `feat(gui): add graphical roulette betting table`.
 - Ostatni commit bieżącej dokumentacji: do ustalenia przez `git log -1 --format="%H %s" -- docs/GUI_PROGRESS.md`; SHA zostanie podany w raporcie czatu. Własnego SHA nie wpisujemy do treści tego samego commita.
-- Kontynuacja do Etapu 6 wyłącznie po: `ZATWIERDZAM ETAP 5 — PRZEJDŹ DO ETAPU 6`.
+- Kontynuacja do Etapu 7 wyłącznie po: `ZATWIERDZAM ETAP 6 — PRZEJDŹ DO ETAPU 7`.
 
 | Etap | Stan | Akceptacja |
 | --- | --- | --- |
@@ -23,8 +23,8 @@
 | 2 — Główne okno i profile | Ukończony | Udzielona |
 | 3 — Stół i obstawianie | Ukończony | Udzielona |
 | 4 — Koło i animacja | Ukończony | Udzielona |
-| 5 — Statystyki | Ukończony | Oczekiwana po raporcie |
-| 6 — Leaderboard | Nierozpoczęty | Brak |
+| 5 — Statystyki | Ukończony | Udzielona |
+| 6 — Leaderboard | Ukończony | Oczekiwana po raporcie |
 | 7 — Prestige Shop | Nierozpoczęty | Brak |
 | 8 — UX i wydajność | Nierozpoczęty | Brak |
 | 9 — Testy i wydanie | Nierozpoczęty | Brak |
@@ -213,6 +213,15 @@ Commit implementacji: **`e475c30ea7e0af58f324d6efddf26090bf11b52b`**, `feat(gui)
 - **Podstawowa kontrola jakości:** przegląd koordynatora potwierdził komplet pól TUI, użycie gotowych usług, brak Rich w widoku odznak i zachowanie blokad. Bez uwag blokujących. Natywny podgląd Qt Windows na tymczasowej bazie potwierdził dwie zapisane rundy i dwie zakupione odznaki; zapisane saldo 4730$, rundy z zyskiem 50%, wygrane zakłady 33,33%. Obejrzano 900×650 i 740×560; po dopasowaniu wysokości krótkiej kolekcji odświeżono zrzut `docs/images/gui-stage5-statistics-900x650.png`. Nie było awarii Qt; nie sprawdzano wszystkich DPI ani EXE.
 - Dokumentacja ograniczona do aktualizacji architektury, tego wpisu i instrukcji ręcznej. Kontrole domykające: diff/check, jawny staged diff, niezmienność silnika/usług/persystencji/TUI i hash roboczej bazy względem początku tego etapu: **`03D9C714B7A610D77A8C307CF4154B5137C2BEDF54D04761018AB524A4550A56`**. Jej zastany stan różnił się od poprzedniego etapu i został zachowany. Wszystkie kontrole zapisujące dane korzystały z baz tymczasowych, bez seedera. SHA commita dostępny w `git log -1` i raporcie czatu. Bez Etapu 6.
 
+## Etap 6 — leaderboard
+
+- Akceptacja: `ZATWIERDZAM ETAP 5 — PRZEJDŹ DO ETAPU 6`; start na czystym `codex`, HEAD `6f22e98`. Wykonawca **leaderboard_gui / leaderboard_stage6, GPT-6.1 Terra / high**, zgodnie z niezmienną definicją narzędzia i TOML; użytkownik dopuszcza High. Bez zmiany konfiguracji, dalszej delegacji i rutynowego QA Astry. Koordynator wykonał integrację i jeden krótki przegląd.
+- Nowe pliki: `app/gui/views/leaderboard.py`, `tests/gui/test_leaderboard.py`. Integracja: `controllers/application_controller.py`, `main_window.py`, `views/menu.py`; dostosowano oczekiwania trzech wcześniejszych testów nawigacji. Tabela pokazuje wszystkie pola TUI, symbole odznak (nazwy w podpowiedzi), podium, kolor zysku i aktywny profil z pozycją. Trwałe komórki są ponownie używane przy odświeżeniu, tabela ma przewijanie i obsługę klawiaturą/Esc.
+- Jedyny odczyt rankingu: `LeaderboardService.get_leaderboard(sort_by)` w istniejącym workerze Qt. Cztery kryteria z `SORT_FIELDS`; progi, remisy, kwalifikacja i kolejność pozostają w usłudze. Bez własnego sortowania, agregacji, SQL lub zmian sesji. Błąd odświeżania zachowuje snapshot tego kryterium; zmiana kryterium czyści stare wiersze przed odczytem, a zmiana profilu resetuje ekran.
+- **Testy celowane wykonawcy: 3 passed in 8.30s** — cztery kryteria i wartości z rzeczywistego serwisu na bazie tymczasowej, aktywny profil/odznaka, próg 10 rund i brak kwalifikacji, pusty ranking, odświeżenie z ponownym użyciem komórki, błąd/retry oraz Esc. **Kontrole koordynatora: 8 passed in 3.07s** — granice importów, pętla startowa GUI i trzy zmienione testy nawigacji. Bez pełnej regresji i serii stabilności.
+- **Przegląd koordynatora:** brak istotnych uwag, potwierdzono wyłącznie prezentacyjną rolę widoku, brak sortowania Qt i zachowanie centralnych blokad. Jeden natywny podgląd Qt Windows na tymczasowej bazie: cztery kwalifikujące się profile, aktywny na miejscu #3, symbole odznak, dodatnie/ujemne wartości, Esc do menu i poprawne zamknięcie. Obejrzano 900×650 i 740×560; zrzut `docs/images/gui-stage6-leaderboard-900x650.png`. Bez awarii Qt; nie badano wszystkich DPI ani EXE.
+- Kontrole domykające: diff/check i przegląd jawnego staged diffu, niezmienność zamrożonego silnika/usług/persystencji/TUI oraz zależności. Hash roboczej bazy identyczny z początkiem tego etapu: **`B73C0D6B5126FF8E27DF0694650D55195F583E7AB35814D38987B8A99C6F9761`** (zastany stan inny niż po Etapie 5 został zachowany). Wszystkie kontrole zapisujące dane używały baz tymczasowych, bez seedera. SHA w `git log -1` i raporcie czatu. Etap 7 nierozpoczęty.
+
 ## Kluczowe decyzje i ograniczenia
 
 - `Game` jest jedynym źródłem zakładów, salda sesji i limitów; `RoundResult` źródłem rozliczenia i wyniku koła.
@@ -231,9 +240,9 @@ Commit implementacji: **`e475c30ea7e0af58f324d6efddf26090bf11b52b`**, `feat(gui)
 1. Otwórz ten sam projekt na `codex`; przeczytaj AGENTS, plan, dziennik i sprawdź status oraz HEAD. Nie klonuj repozytorium.
 2. Przy nowej sesji sprawdź dostępność nazwanych ról w natywnym narzędziu delegacji. W razie wątpliwości wykonaj krótki audyt do odczytu przez `architecture_auditor`; nie diagnozuj bieżącej sesji wyłącznie przez osobny CLI.
 3. Nie zmieniaj zaufania projektu, globalnych uprawnień ani sandboxa. Zachowaj model koordynatora GPT-6.1 Sol / High i limit 2 subagentów.
-4. Po ukończeniu Etapu 5 dalsza praca wymaga dokładnie `ZATWIERDZAM ETAP 5 — PRZEJDŹ DO ETAPU 6`. Sama działająca delegacja nie zatwierdza kolejnych etapów.
+4. Po ukończeniu Etapu 6 dalsza praca wymaga dokładnie `ZATWIERDZAM ETAP 6 — PRZEJDŹ DO ETAPU 7`. Sama działająca delegacja nie zatwierdza kolejnych etapów.
 5. Wykonać wyłącznie następny zaakceptowany etap, testy i kontrolę diffu, uzupełnić dziennik, commit i zatrzymać się.
 
 ## Następny etap — jeszcze nieautoryzowany
 
-Etap 6: ranking z istniejącego LeaderboardService, wszystkie sortowania, progi, remisy i oznaczenie aktywnego profilu. Do wykonania dopiero po akceptacji Etapu 5.
+Etap 7: Prestige Shop — karty odznak, zakup przez ShopService, aktualizacja salda/kolekcji i obsługa błędów. Do wykonania dopiero po akceptacji Etapu 6.

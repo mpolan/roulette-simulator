@@ -8,6 +8,7 @@ from gui.views.game import GameView
 from gui.views.profiles import ProfilesView
 from gui.views.menu import MenuView
 from gui.views.statistics import StatisticsView
+from gui.views.leaderboard import LeaderboardView
 
 
 class MainWindow(QMainWindow):
@@ -22,12 +23,14 @@ class MainWindow(QMainWindow):
         self.profiles_view = ProfilesView()
         self.menu_view = MenuView()
         self.statistics_view = StatisticsView()
+        self.leaderboard = LeaderboardView()
         self.game_controller = GameController(self.controller, self)
         self.game_view = GameView(self.game_controller)
         self.stack.addWidget(self.profiles_view)
         self.stack.addWidget(self.menu_view)
         self.stack.addWidget(self.game_view)
         self.stack.addWidget(self.statistics_view)
+        self.stack.addWidget(self.leaderboard)
         self._started = False
         self._shutdown_complete = False
         self._close_dialog = None
@@ -46,12 +49,17 @@ class MainWindow(QMainWindow):
         self.menu_view.statistics_requested.connect(self.show_statistics)
         self.statistics_view.back_requested.connect(self.show_menu)
         self.statistics_view.refresh_requested.connect(self.refresh_statistics)
+        self.menu_view.leaderboard_requested.connect(self.show_leaderboard)
+        self.leaderboard.back_requested.connect(self.show_menu)
+        self.leaderboard.refresh_requested.connect(self._refresh_leaderboard)
         self.game_view.back_requested.connect(self.show_menu)
         self.menu_view.exit_requested.connect(self.close)
         self.controller.profiles_changed.connect(self.profiles_view.set_profiles)
         self.controller.session_changed.connect(self._session_changed)
         self.controller.statistics_changed.connect(self._statistics_changed)
         self.controller.statistics_error.connect(self._statistics_error)
+        self.controller.leaderboard_changed.connect(self._leaderboard_changed)
+        self.controller.leaderboard_error.connect(self._leaderboard_error)
         self.game_controller.state_changed.connect(self._game_changed)
         self.game_controller.error.connect(self.statusBar().showMessage)
         self.controller.busy_changed.connect(self._update_state)
@@ -82,6 +90,7 @@ class MainWindow(QMainWindow):
         self.menu_view.set_session(session)
         self.game_controller.set_session(session)
         self.statistics_view.reset()
+        self.leaderboard.reset()
         self.show_menu()
         self._update_state()
 
@@ -116,6 +125,28 @@ class MainWindow(QMainWindow):
             self.controller.session is not None and not self.controller.navigation_blocked()
         )
         self.statistics_view.set_busy(self.controller.navigation_blocked())
+        self.menu_view.leaderboard_button.setEnabled(
+            self.controller.session is not None and not self.controller.navigation_blocked()
+        )
+        self.leaderboard.set_busy(self.controller.navigation_blocked())
+
+    def show_leaderboard(self):
+        if self.controller.session is None or self.controller.navigation_blocked():
+            self.statusBar().showMessage(self.controller.blocked_reason())
+            return
+        self.stack.setCurrentWidget(self.leaderboard)
+        self._refresh_leaderboard(self.leaderboard.sort_by)
+
+    def _refresh_leaderboard(self, sort_by):
+        self.controller.load_leaderboard(sort_by)
+
+    def _leaderboard_changed(self, entries):
+        self.leaderboard.set_data(entries, self.controller.session.player_id)
+        self.leaderboard.sort_combo.setFocus()
+
+    def _leaderboard_error(self, message):
+        self.leaderboard.show_error(message)
+        self.leaderboard.refresh_button.setFocus()
 
     def show_statistics(self):
         if self.controller.session is None or self.controller.navigation_blocked():
