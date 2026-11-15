@@ -1,6 +1,6 @@
 # Obsidian Royale — plan migracji TUI → GUI
 
-Data audytu: 2026-11-15. Zakres tej jednostki pracy: **wyłącznie Etap 0**.
+Data audytu: 2026-11-15. Etap 0 ukończony i zaakceptowany; aktualna jednostka pracy: **wyłącznie Etap 1**.
 
 ## 1. Stan wejściowy i granice
 
@@ -8,7 +8,7 @@ Data audytu: 2026-11-15. Zakres tej jednostki pracy: **wyłącznie Etap 0**.
 - Zastana gałąź: `codex`, śledząca `origin/dev`. Nie zmieniano upstreamu ani innych gałęzi.
 - Początkowy HEAD i lokalny `main`: `4ba0069f25eb652917a039f76c634fdd1d8d4072` (`Roulette MVP 3.0`). Drzewo robocze i indeks były czyste.
 - `app/domain/`, `app/services/`, `app/persistence/` są zamrożone. TUI pozostaje oddzielną, działającą docelowo aplikacją. Etap 0 nie zmienia kodu ani zależności i nie uruchamia gry.
-- Środowisko lokalne: Python 3.10.6, Textual 8.2.8, Rich 15.0.0; PySide6 i pytest nie są zainstalowane w `venv`. Repozytorium nie zawiera zestawu testów. Dobór wersji PySide6 zgodnej z Pythonem nastąpi w Etapie 1.
+- Stan wejściowy Etapu 0: Python 3.10.6, Textual 8.2.8, Rich 15.0.0; PySide6 i pytest nie były zainstalowane w `venv`, repozytorium nie zawierało zestawu testów. Zależności i testy dodano dopiero w Etapie 1, opisanym w sekcji 5.
 - Istnieją lokalne pliki `BUILD.md`, `build.ps1`, `ObsidianRoyale.spec`, `requirements-build.txt` oraz katalogi `build/`, `dist/`, ignorowane przez Git. Nie są częścią audytowanego commita źródeł ani dowodem na aktualność EXE. Nie zmieniano ich.
 
 ## 2. Mapa obecnej architektury i zależności
@@ -61,7 +61,7 @@ Ranking: `net_profit`, `total_rounds`, `win_rate`, `badge_count`. Serwis pomija 
 - GUI i TUI nie powinny jednocześnie prowadzić gry tym samym profilem: sesje przechowują saldo w pamięci, a zapis rundy ustawia je w bazie. Zgodność bazy nie oznacza synchronizacji dwóch aktywnych procesów. Nie zmieniać tego kontraktu w ramach migracji.
 - Testy integracyjne użyją tymczasowej bazy i podmiany `persistence.database.DB_PATH` w fixture, bez zmian źródeł repozytoriów. Nie kopiować danych prywatnych do repozytorium.
 
-## 5. Docelowa architektura prezentacji — propozycja do zatwierdzenia w Etapie 1
+## 5. Docelowa architektura prezentacji — ustalona w Etapie 1
 
 ```text
 app/gui_app.py                 niezależny start Qt i init_db
@@ -75,13 +75,21 @@ app/gui/widgets/               stół, żetony, koszyk, koło, prezentacja odzna
 app/gui/theme.py               wspólna paleta i style Qt
 tests/                        regresje silnika oraz testy prezentacji
 requirements-gui.txt           zależności GUI, bez usuwania Textual
+requirements-dev.txt           zależności testów
+pytest.ini                    ścieżki importów i katalog testów
 ```
 
-To mapa odpowiedzialności, nie polecenie utworzenia tych plików w Etapie 0. Nie dodawać abstrakcyjnego ORM, event busa ani drugiego modelu domenowego. Sygnały kontrolera przekazują aktualny stan lub niewielkie zmiany do trwałych widgetów. Zmiana żetonu zaznacza selektor; postawienie żetonu aktualizuje dane pola, saldo, koszyk i przycisk SPIN; zakup aktualizuje saldo i odpowiednią kartę/kolekcję.
+To docelowa mapa odpowiedzialności. W Etapie 1 istnieją tylko `app/gui_app.py`, `app/gui/__init__.py`, `app/gui/application.py`, pliki zależności, konfiguracja pytest i testy. Pozostałe moduły powstają dopiero w przypisanych im etapach; nie tworzymy pustych katalogów ani zastępczych kontrolerów.
+
+Nie dodawać abstrakcyjnego ORM, event busa ani drugiego modelu domenowego. Sygnały kontrolera przekazują aktualny stan lub niewielkie zmiany do trwałych widgetów. Zmiana żetonu zaznacza selektor; postawienie żetonu aktualizuje dane pola, saldo, koszyk i przycisk SPIN; zakup aktualizuje saldo i odpowiednią kartę/kolekcję.
+
+Punkt startowy `gui_app.py` wywołuje `gui.application.run()`. `create_application(argv)` tworzy lub zwraca istniejący QApplication, `create_bootstrap_window()` tworzy proste okno QWidget, a `run()` inicjalizuje istniejącą bazę przez `init_db()`, pokazuje okno i uruchamia pętlę Qt. Sam import niczego nie zapisuje. Błąd SQLite lub systemu plików pokazuje polski komunikat i kończy start kodem 1. Nie ma jeszcze wyboru profilu, menu ani gry. Etap 2 zastąpi okno bootstrap właściwym `main_window.py` i podepnie istniejące usługi; nie będzie rozwijał drugiego równoległego interfejsu.
 
 Stół i koło mogą używać QGraphicsScene/QGraphicsView z trwałymi elementami. Animacja: Qt timer lub QPropertyAnimation/QVariantAnimation, stopniowe zwalnianie i zatrzymanie na `RoundResult.pocket`. Stan prezentacji: gotowy → zapis/rozliczenie → animacja → gotowy, z osobnym stanem oczekiwania na ponowienie zapisu. Zakłady i mutacje sesji blokowane przy pending/animacji; profil i zamknięcie dodatkowo przy aktywnych zakładach. Powrót z gry do menu jest blokowany przy pending/animacji, a przy samych zakładach zachowuje tę samą sesję, zgodnie z TUI. Przechwytujemy także systemowe zamknięcie okna i spóźnione/podwójne sygnały. Wspólne kontrolery edytuje jeden wykonawca naraz.
 
-SQLite może czekać na blokadę dysku. W Etapie 1 ustalić sposób wykonywania I/O poza wątkiem GUI; jedna operacja mutująca sesję na raz, żadnych równoległych spinów ani obiektów Qt używanych w obcym wątku. Obecne repozytoria tworzą połączenia wewnątrz operacji, więc nie trzeba przenosić połączenia SQLite między wątkami. Aktualizacje widgetów zawsze w wątku Qt.
+SQLite może czekać na blokadę dysku. W kolejnych etapach operacje repozytoriów/usług będą wykonywane przez jeden worker QObject w QThread, z żądaniami i wynikami przekazywanymi przez sygnały Qt. Kontroler blokuje ponowne zlecenie mutacji do wyniku poprzedniej operacji, zachowuje jedną sesję i nie czyta zmienianego stanu w trakcie operacji. Worker nie dotyka widgetów. Repozytoria tworzą połączenia wewnątrz operacji, więc połączeń SQLite nie przenosimy między wątkami. Przy zamykaniu kontroler czeka na zakończenie trwającej operacji bez blokującego oczekiwania w slocie GUI, a pending nadal wymaga retry. Implementacja workera nastąpi razem z faktycznym użyciem usług; Etap 1 nie tworzy tej warstwy na zapas. Jednorazowy `init_db()` odbywa się przed pokazaniem okna bootstrap; okno nie oferuje jeszcze żadnych interaktywnych operacji bazy. Aktualizacje widgetów zawsze w wątku Qt.
+
+Zależności są rozdzielone: dotychczasowy `requirements.txt` pozostaje bez zmian, `requirements-gui.txt` dodaje `PySide6==6.12.0`, a `requirements-dev.txt` dodaje `pytest==8.4.2`. Wersje dobrano dla Python 3.10.6 / Windows x64 i zweryfikowano w indeksie pip oraz w metadanych [PySide6](https://pypi.org/project/PySide6/6.12.0/) i [pytest](https://pypi.org/project/pytest/8.4.2/). Bootstrap korzysta z oficjalnego modelu [Qt Widgets: QApplication, QWidget i pętla exec](https://doc.qt.io/qtforpython-6/tutorials/basictutorial/widgets.html). Testy nie wymagają pytest-qt ani pytest-asyncio; Qt pracuje offscreen, a smoke Textual używa `asyncio.run()` i `run_test()`.
 
 ## 6. Ryzyka i wymagania regresyjne
 
@@ -124,9 +132,11 @@ Konfiguracja `.codex/config.toml` ustawia koordynatora `gpt-6.1-sol` / `high`, `
 
 Skrócone ścieżki w tabeli są rozwinięte jednoznacznie w plikach TOML. Koordynator odpowiada za plan, dziennik, testy regresyjne Etapu 1, integrację wspólnych plików i Git. Audytor ani QA nie mogą samodzielnie rozszerzać zakresu. Limity zapisu w instrukcjach nie są izolacją OS.
 
-Bieżące narzędzie delegacji przyjmuje nazwę zadania, jawny model i reasoning, nie parametr wyboru projektowej roli. W tej sesji role audytowe uruchomiono jawnie z tymi ustawieniami i zakazem edycji. Nie deklarujemy, że nowo zapisane TOML już przeładowały działającą sesję. Do dalszej pracy wymagamy nowej sesji w zaufanym projekcie, odczytu TOML i kontroli efektywnych ustawień; nie jest potrzebna zmiana konfiguracji globalnej. Patrz instrukcja wznowienia w dzienniku.
+W sesji Etapu 0 narzędzie delegacji przyjmowało nazwę zadania, jawny model i reasoning, bez parametru wyboru projektowej roli. Role audytowe uruchomiono wówczas jawnie z tymi ustawieniami i zakazem edycji. Nie deklarowano przeładowania nowych TOML w działającej sesji. Zalecono ponowne sprawdzenie przy wznowieniu; późniejszą skuteczną weryfikację natywną opisano poniżej.
 
 Weryfikacja CLI ma ograniczenie: `--strict-config app-server --print-startup-config` kończy się poprawnie, ale `config/read` z cwd projektu pokazał, że osobne konto procesu sandboxa nie ufa temu projektowi i pomija jego warstwę. Jednorazowa flaga trust w CLI nie zmieniła tej sytuacji. To nie jest dowód aktywacji konfiguracji projektu. Potwierdzono składnię 12 TOML i zgodność pól z dokumentacją; efektywnego zastosowania ustawień w nowym czacie trzeba dopilnować przy wznowieniu. Nie zmieniano plików zaufania ani konfiguracji globalnej.
+
+**Aktualizacja bramki przed Etapem 1:** powyższe dwa akapity opisują stan z Etapu 0. Natywne narzędzie bieżącej sesji udostępnia już `agent_type` i wszystkie 11 nazwanych ról z przypisanymi modelami/effort. Rola `architecture_auditor` została faktycznie uruchomiona i zakończyła audyt do odczytu; definicja narzędzia przypisuje jej niezmienne `gpt-6-astra / medium`. Limit sesji to 3 sloty łącznie z koordynatorem, czyli 2 subagentów. Zgodnie z późniejszą instrukcją użytkownika jest to wystarczające potwierdzenie do rozpoczęcia Etapu 1. Nie wnioskujemy o aktywnym modelu koordynatora z samego pliku TOML i nie diagnozujemy dalej zaufania poprzez osobny CLI. Nie zmieniono uprawnień ani konfiguracji bezpieczeństwa.
 
 ## 8. Etapy i kryteria odbioru
 
