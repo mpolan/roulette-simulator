@@ -3,23 +3,24 @@
 ## Stan i bramka akceptacji
 
 - Aktualizacja: 2026-11-15.
-- Aktualnie zaakceptowany ukończony etap: **Etap 1**, przez wiadomość `ZATWIERDZAM ETAP 1 — PRZEJDŹ DO ETAPU 2`.
-- Etap 2: **ukończony; oczekiwanie na akceptację wyniku**. Etapy 3–9 nierozpoczęte.
+- Aktualnie zaakceptowany ukończony etap: **Etap 2**, przez wiadomość `ZATWIERDZAM ETAP 2 — PRZEJDŹ DO ETAPU 3`.
+- Etap 3: **ukończony; oczekiwanie na akceptację wyniku**. Etapy 4–9 nierozpoczęte.
 - Etap 0: ukończony i zaakceptowany.
 - Gałąź: `codex`; początkowy commit: `4ba0069f25eb652917a039f76c634fdd1d8d4072` (`Roulette MVP 3.0`). Początkowy status czysty, brak wcześniejszych zmian użytkownika.
 - Ostatni commit konfiguracji: `7c5bacfcebe0bf0af4fbbcc4d40d39e2a1e9de38` — `chore(gui): configure project agents` (13 plików: AGENTS i konfiguracja ról).
-- Ostatni commit poprzedniego etapu: `bd8fb72a8c956f433b1110d3f1fc6b22303a70d0` — dokumentacja i wyniki Etapu 1.
+- Ostatni commit poprzedniego etapu: `346996b` — dokumentacja i wyniki Etapu 2.
 - Ostatni commit implementacji Etapu 1: `69a187fd4395664903697f3ba23a7d13a008a1c3` — `feat(gui): bootstrap Qt and add baseline regressions`.
 - Ostatni commit implementacji Etapu 2: `99f2963cd7f82fbd8746b0bf3d94c578b473f110` — `feat(gui): add main window and player profiles`.
+- Ostatni commit implementacji Etapu 3: `e475c30ea7e0af58f324d6efddf26090bf11b52b` — `feat(gui): add graphical roulette betting table`.
 - Ostatni commit bieżącej dokumentacji: do ustalenia przez `git log -1 --format="%H %s" -- docs/GUI_PROGRESS.md`; SHA zostanie podany w raporcie czatu. Własnego SHA nie wpisujemy do treści tego samego commita.
-- Kontynuacja do Etapu 3 wyłącznie po: `ZATWIERDZAM ETAP 2 — PRZEJDŹ DO ETAPU 3`.
+- Kontynuacja do Etapu 4 wyłącznie po: `ZATWIERDZAM ETAP 3 — PRZEJDŹ DO ETAPU 4`.
 
 | Etap | Stan | Akceptacja |
 | --- | --- | --- |
 | 0 — Bootstrap i audyt | Ukończony | Udzielona |
 | 1 — Testy bazowe i architektura | Ukończony | Udzielona |
-| 2 — Główne okno i profile | Ukończony | Oczekiwana po raporcie |
-| 3 — Stół i obstawianie | Nierozpoczęty | Brak |
+| 2 — Główne okno i profile | Ukończony | Udzielona |
+| 3 — Stół i obstawianie | Ukończony | Oczekiwana po raporcie |
 | 4 — Koło i animacja | Nierozpoczęty | Brak |
 | 5 — Statystyki | Nierozpoczęty | Brak |
 | 6 — Leaderboard | Nierozpoczęty | Brak |
@@ -144,6 +145,41 @@ Dotychczasowy start TUI: `.\venv\Scripts\python.exe app/app.py`. Na świeżym ś
 
 Aktualny start prowadzi do ekranu profili, nie do przejściowego okna Etapu 1. Uruchomienie i lista ręcznych prób są w `GUI_MANUAL_CHECK.md`. Następny etap wymaga osobnej akceptacji. Ograniczenie pojedynczej natywnej awarii Qt pozostaje jawnie zapisane powyżej do dalszej obserwacji.
 
+## Etap 3 — graficzny stół i obstawianie
+
+### Zakres, agenci i pliki
+
+- Akceptacja użytkownika: `ZATWIERDZAM ETAP 2 — PRZEJDŹ DO ETAPU 3`. Start na czystej gałęzi `codex`, HEAD `346996b` (`docs(gui): record stage two validation and manual checks`). Bez zmiany gałęzi, upstreamu i wcześniejszych commitów.
+- Sprawdzono `.codex/config.toml` i komplet 11 definicji ról. Natywne narzędzie sesji udostępnia wybrane role z przypisanymi modelami/effort; nie stosowano zamienników ani osobnego CLI jako dowodu ustawień bieżącej sesji.
+- **betting_table / table_stage3: GPT-6.1 Sol / high**, natywna rola: GameController, GameView, BettingTable, ChipPicker, BetCart i `tests/gui/test_betting.py`. Wyłączna własność tych sześciu plików do zakończenia implementacji.
+- **qa_reviewer / qa_stage3: GPT-6 Astra / medium**, niezależny audyt wyłącznie do odczytu. Bez dalszej delegacji i bez przekroczenia dwóch aktywnych subagentów.
+- Koordynator: integracja `main_window.py` i `views/menu.py`, `tests/gui/test_game_navigation.py`, dostosowanie `tests/gui/test_navigation.py`, natywne próby Qt, zrzuty, dokumentacja i Git. Konfiguracja projektu wskazuje `gpt-6.1-sol / high`; sam TOML nie stanowi pomiaru aktywnego modelu koordynatora.
+- Pełny europejski stół: liczby 0–36, trzy tuziny i kolumny oraz RED/BLACK/EVEN/ODD/LOW/HIGH, łącznie 49 pól i wszystkie dziewięć BetType. Kolory liczb odczytywane z `game.wheel.pockets`.
+- CHIPS domyślny, nominały i limit z Game; lewy klik/Enter/Spacja dodaje, prawy klik/Delete/Backspace usuwa ostatni żeton. Stosy przedstawione kolorowymi krążkami z sumą stawki na polu.
+- CLASSIC: wybór rodzaju/grupy lub pól na stole, wielokrotny STRAIGHT, pełna stawka na każdą liczbę, podgląd kosztu, atomowe `place_bets()`. Formularz nie kopiuje walidatora domeny. Przełączenie trybu zachowuje już przyjęte zakłady.
+- Koszyk przechowuje dokładne referencje Bet; osobne usuwanie identycznych pozycji przez przycisk Usuń, dwuklik i Delete/Backspace. Saldo i stawka pochodzą wyłącznie z Game.
+- Trwałe QGraphicsObject i QListWidgetItem; aktualizowane tylko zmienione pola/wiersze i wartości etykiet. Snapshot pola uwzględnia tożsamość Bet także po zmianie sesji na równoważne kwotowo zakłady.
+- Klawiatura: strzałki po wszystkich polach, Tab/Shift+Tab, Enter/Spacja, Delete/Backspace, Alt+1…5 (nominał), Alt+C (tryb), Ctrl+Enter lub Enter w stawce (CLASSIC), Esc (menu). Wybór jednego nominału pozostaje aktywny także po ponownym kliknięciu.
+- Powrót do menu zachowuje tę samą sesję, tryb, nominał i zakłady. Zmiana profilu i zamknięcie blokowane przy zakładach; pending/animacja/busy/zamykanie blokują mutacje i nawigację zgodnie z centralnym kontrolerem.
+- **SPIN widoczny i stale nieaktywny**: Etap 3 nie wywołuje RNG, rozliczenia ani zapisu rund. Nie dodano koła ani funkcji późniejszych etapów.
+
+### Kontrole, QA i stabilność Qt
+
+- Baseline przed zmianami: **591 passed in 14.35s**.
+- **Końcowy pełny zestaw: 672 passed in 16.87s**, `.\venv\Scripts\python.exe -X faulthandler -m pytest -q`. Wcześniejszy pełny przebieg przed ostatnim dodatkowym testem: 671 passed in 16.63s.
+- Nowe regresje: 77 testów obstawiania i 4 integracyjne testy nawigacji gry. Obejmują wszystkie 49 pól, typy CLASSIC, atomowość, limity/LIFO/zwroty, niezależne identyczne Bet, mieszanie trybów, błędy, rzeczywisty pending, blokady, trwałość elementów, skróty, zmianę sesji i zakaz spin/save w Etapie 3. Dotychczasowe testy nawigacji dostosowano do trzech widoków i aktywnej pozycji Gra.
+- Niezależny QA: **106 passed in 14.02s** (GUI/bootstrap/granice importów), dodatkowe **5 passed** po poprawce rozmiaru żetonów; końcowo **77 passed in 0.47s** na finalnym pliku obstawiania. Osobny probe potwierdził osiągalność **49/49 pól strzałkami** oraz pojedynczy zakład przez Ctrl+Enter. **Brak pozostałych uwag P1/P2 blokujących odbiór**.
+- Zdiagnozowano wizualne obcinanie żetonów: ogólny QSS QPushButton zmieniał minimum wysokości 52 na 34 px mimo setFixedSize. Lokalny QSS ChipButton min/max 52 px, padding 0 i minimum wysokości selektora usuwają problem. Regresje sprawdzają pełne 52×52 i zawieranie każdego przycisku w rodzicu przy trzech rozmiarach widoku. Końcowy QA potwierdził poprawne zrzuty.
+- Natywny smoke koordynatora: **Qt platform=windows**, `-X faulthandler`, tymczasowa baza. **12 cykli przed poprawką geometrii i 12 po niej**, w każdym nowe okno/worker, wybór profilu, kliknięcia stołu, LIFO, Esc i powrót, kontrola salda, usunięcie zakładów, zamknięcie i zakończony QThread. Przechwycono również CHIPS w 900×650/1280×800/740×560 i CLASSIC w 900×650 przez QWidget.grab(); obrazy obejrzano po poprawce.
+- **Historyczny Windows access violation nie powtórzył się** w żadnej kontroli Etapu 3. Nie zgłaszamy udowodnionego usunięcia dawnej przyczyny; brak reprodukcji nie gwarantuje pełnej stabilności. Nie było nowej awarii wymagającej dalszej diagnostyki. Nie sprawdzano wszystkich konfiguracji Windows/DPI ani pełnej rozgrywki.
+- `pip check`: **No broken requirements found**. Zależności i konfiguracja agentów bez zmian.
+- Kontrola diffu zamrożonego silnika, usług, persystencji, całego TUI i `requirements.txt`: pusta. SHA-256 roboczej `data/roulette.db` niezmienione: `FAF650B44BDB7BD37BD9639D3872F18A7AEAF5E4BA00C9EE72B7A3FA8D98FD29`. Testy i natywne próby używały wyłącznie tymczasowych baz; nie uruchamiano seedera.
+- Instrukcja ręczna i cztery zrzuty: `docs/GUI_MANUAL_CHECK.md`, `docs/images/gui-stage3-*.png`. Obrazy zawierają wyłącznie profil demonstracyjny. Nie budowano EXE i nie rozpoczęto Etapu 4.
+
+### Commity i zatrzymanie
+
+Commit implementacji: **`e475c30ea7e0af58f324d6efddf26090bf11b52b`**, `feat(gui): add graphical roulette betting table` — dokładnie dziesięć jawnie wskazanych plików GUI/testów. Przed commitem zaliczono `git diff --check`, `git diff --cached --check`, przegląd całego staged diffu i ponowny pusty diff zamrożonych źródeł/TUI. Po commicie sprawdzono SHA oraz status: pozostała wyłącznie dokumentacja i zrzuty przygotowane do osobnego commita. Jego SHA jest dostępny w `git log` i raporcie czatu; nie wpisujemy własnego SHA w treść tego samego commita. Bez push/merge/rebase, zmian innych gałęzi ani artefaktów wydania. Następna dozwolona jednostka pracy, dopiero po dokładnej akceptacji, to Etap 4 opisany poniżej.
+
 ## Kluczowe decyzje i ograniczenia
 
 - `Game` jest jedynym źródłem zakładów, salda sesji i limitów; `RoundResult` źródłem rozliczenia i wyniku koła.
@@ -162,9 +198,9 @@ Aktualny start prowadzi do ekranu profili, nie do przejściowego okna Etapu 1. U
 1. Otwórz ten sam projekt na `codex`; przeczytaj AGENTS, plan, dziennik i sprawdź status oraz HEAD. Nie klonuj repozytorium.
 2. Przy nowej sesji sprawdź dostępność nazwanych ról w natywnym narzędziu delegacji. W razie wątpliwości wykonaj krótki audyt do odczytu przez `architecture_auditor`; nie diagnozuj bieżącej sesji wyłącznie przez osobny CLI.
 3. Nie zmieniaj zaufania projektu, globalnych uprawnień ani sandboxa. Zachowaj model koordynatora GPT-6.1 Sol / High i limit 2 subagentów.
-4. Po ukończeniu Etapu 2 dalsza praca wymaga dokładnie `ZATWIERDZAM ETAP 2 — PRZEJDŹ DO ETAPU 3`. Sama działająca delegacja nie zatwierdza kolejnych etapów.
+4. Po ukończeniu Etapu 3 dalsza praca wymaga dokładnie `ZATWIERDZAM ETAP 3 — PRZEJDŹ DO ETAPU 4`. Sama działająca delegacja nie zatwierdza kolejnych etapów.
 5. Wykonać wyłącznie następny zaakceptowany etap, testy i kontrolę diffu, uzupełnić dziennik, commit i zatrzymać się.
 
 ## Następny etap — jeszcze nieautoryzowany
 
-Etap 3: graficzny stół europejski, CHIPS/CLASSIC, aktualne typy zakładów, stosy żetonów, usuwanie, koszyk, saldo i blokady — wyłącznie przez obecne API Game. Bez implementacji animacji koła należącej do Etapu 4. Do wykonania dopiero po akceptacji Etapu 2.
+Etap 4: graficzne koło z kolejnością i kolorami 37 pól z silnika, nieblokująca animacja do zwróconego RoundResult, pojedyncze spin_and_save(), retry tego samego wyniku oraz blokady i testy. Do wykonania dopiero po akceptacji Etapu 3. W Etapie 3 SPIN nie rozlicza rund.
