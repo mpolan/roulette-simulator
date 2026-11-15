@@ -1,4 +1,4 @@
-# Obsidian Royale — ręczne sprawdzenie Etapu 4
+# Obsidian Royale — ręczne sprawdzenie Etapu 5
 
 ## Uruchomienie
 
@@ -28,7 +28,7 @@ Normalny start korzysta z istniejącej `data/roulette.db`. Utworzone ręcznie pr
 2. Przejdź do wyboru profilu, a następnie wybierz **Powrót do menu** albo naciśnij **Esc**. Oczekiwane: menu tego samego gracza, bez tworzenia nowej sesji.
 3. Użyj **Tab** i **Shift+Tab** do przejścia po dostępnych kontrolkach. Przycisk można zatwierdzić **Spacją** lub **Enter**; pola nazwy i lista mają własną obsługę Enter.
 4. Po zmianie rozmiaru sprawdź czytelność. W menu przy małej wysokości lub długiej nazwie dostępne jest przewijanie, aby przycisk wyjścia pozostał osiągalny.
-5. **Gra** otwiera stół obstawiania. **Sklep**, **Statystyki**, **Ranking** i **Ustawienia** pozostają nieaktywne, z informacją po najechaniu.
+5. **Gra** otwiera stół obstawiania, a **Statystyki** — statystyki i kolekcję aktywnego profilu. **Sklep**, **Ranking** i **Ustawienia** pozostają nieaktywne.
 6. Zamknij aplikację przyciskiem **Wyjdź** i, po ponownym uruchomieniu, systemowym przyciskiem zamknięcia. Profile powinny pozostać dostępne po starcie.
 
 ## Blokady i zakres weryfikacji
@@ -83,7 +83,18 @@ Zmiana profilu i jego utworzenie pozostają blokowane przy aktywnych zakładach 
 
 Historyczne kontrole Etapu 3, w tym próby natywnego Qt i ograniczenia diagnozy jego awarii, opisuje `GUI_PROGRESS.md`. W Etapie 4 wykonano tylko celowane testy i jeden natywny smoke na tymczasowej bazie. Nie zastępują one kontroli wszystkich ustawień Windows/DPI ani pełnej regresji zaplanowanej na Etap 9.
 
+## Statystyki i kolekcja odznak
+
+1. W menu wybierz **Statystyki**. Sprawdź nazwę profilu i **zapisane saldo**. Aktywne zakłady nie zmieniają zapisanej historii ani tego salda; powrót do menu i gry zachowuje sesję oraz jej zakłady.
+2. Sekcje Rozgrywka, Finanse i Skuteczność pokazują wszystkie wartości z TUI. Odróżnij procent rund z zyskiem od procentu wygranych zakładów oraz wypłatę od bilansu netto. Dodatni/ujemny bilans ma subtelne oznaczenie kolorem.
+3. Sprawdź nowy profil bez rund: zera, skuteczność 0.00% i czytelny komunikat. Pusta kolekcja ma własny komunikat. Zakupione odznaki pokazują symbole i nazwy; obok widoczne są liczba odznak i łączna wydana kwota.
+4. **Odśwież** ponownie pobiera gotowe dane z usług i repozytorium. **Tab/Shift+Tab** przechodzi między kontrolkami, **Enter/Spacja** uruchamia przyciski, **Esc** wraca do menu. Podczas odczytu akcje są chwilowo zablokowane. Po zmianie profilu nie mogą pozostać dane poprzedniego gracza.
+5. Przy błędzie odczytu pojawia się komunikat i możliwość ponownego odświeżenia. Poprzednie dane tego samego profilu pozostają do czasu udanego odczytu; test wymusza błąd na danych tymczasowych.
+6. Sprawdź czytelność przy 900 × 650 i 740 × 560; przewijaj zawartość w mniejszym oknie. Zakupy odznak w GUI należą do późniejszego etapu — tutaj wyświetlana jest tylko istniejąca kolekcja.
+
 ## Zrzuty kontrolne
+
+Etap 5: [statystyki i odznaki, 900 × 650](images/gui-stage5-statistics-900x650.png), natywny backend Qt Windows, profil demonstracyjny na tymczasowej bazie. Kontrola obejmowała też rozmiar 740 × 560; mniejszy widok ma przewijanie.
 
 Etap 4: [koło i wynik, 900 × 650](images/gui-stage4-result-900x650.png), natywny backend Qt Windows, przykładowa runda na tymczasowej bazie. Jeden smoke nowej rundy, bez serii stabilności i pełnego zestawu testów; awaria Qt nie wystąpiła. Historyczne ograniczenie diagnozy pozostaje w dzienniku.
 
@@ -97,7 +108,7 @@ Zrzuty wykonano przez QWidget.grab() z natywnego backendu Qt Windows, na profilu
 ## Testy automatyczne
 
 ```powershell
-.\venv\Scripts\python.exe -X faulthandler -m pytest -q tests/gui/test_wheel.py tests/gui/test_game_navigation.py tests/gui/test_close.py
+.\venv\Scripts\python.exe -X faulthandler -m pytest -q tests/gui/test_statistics.py tests/test_import_boundaries.py
 ```
 
 Testy przełączają ścieżkę SQLite na pliki tymczasowe; nie korzystają z roboczej bazy graczy.

@@ -71,7 +71,7 @@ def test_mouse_selection_switching_balance_and_persistent_views(make_window, wai
     assert "1825" in menu.balance_label.text()
     assert window.profiles_view is profiles
     assert window.menu_view is menu
-    assert window.stack.count() == 3
+    assert window.stack.count() == 4
     assert len(players.get_all_players()) == 2
 
 
@@ -232,10 +232,11 @@ def test_plain_text_profile_names_and_future_features_disabled(make_window, wait
     assert profile.name in window.menu_view.player_label.text()
     from PySide6.QtWidgets import QPushButton
     future = [button for button in window.menu_view.findChildren(QPushButton)
-              if button.text() in ("Sklep", "Statystyki", "Ranking", "Ustawienia")]
-    assert len(future) == 4
+              if button.text() in ("Sklep", "Ranking", "Ustawienia")]
+    assert len(future) == 3
     assert all(not button.isEnabled() and button.toolTip() for button in future)
     assert window.menu_view.game_button.isEnabled()
+    assert window.menu_view.statistics_button.isEnabled()
 
 
 @pytest.mark.parametrize("state", ["pending", "animating"])

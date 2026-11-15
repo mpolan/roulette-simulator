@@ -3,7 +3,11 @@ import sqlite3
 from PySide6.QtCore import QObject, QThread, QTimer, Signal, Slot
 
 from persistence.player_repository import PlayerRepository
+from persistence.round_repository import RoundRepository
+from persistence.shop_repository import ShopRepository
 from services.session_factory import create_game_session
+from services.stats_service import StatsService
+from services.shop_service import ShopService
 
 
 class _Worker(QObject):
@@ -13,6 +17,8 @@ class _Worker(QObject):
         super().__init__()
         self.players = players
         self.session_factory = session_factory
+        self.stats = StatsService(RoundRepository())
+        self.shop = ShopService(ShopRepository())
 
     @Slot(str, object)
     def execute(self, action, argument):
@@ -27,6 +33,12 @@ class _Worker(QObject):
                 result = argument.spin_and_save()
             elif action == "retry":
                 result = argument.save_pending_round()
+            elif action == "statistics":
+                profile = self.players.get_player(argument)
+                if profile is None:
+                    raise LookupError("Profil nie istnieje.")
+                result = (profile, self.stats.get_player_stats(argument),
+                          self.shop.get_owned_badges(argument), self.shop.get_total_spent(argument))
             else:
                 result = self.session_factory(argument)
             self.finished.emit(action, result, None, created)
@@ -41,6 +53,8 @@ class ApplicationController(QObject):
     error = Signal(str)
     shutdown_finished = Signal()
     round_finished = Signal(object, object)
+    statistics_changed = Signal(object)
+    statistics_error = Signal(str)
     _request = Signal(str, object)
     _stop = Signal()
 
@@ -85,7 +99,7 @@ class ApplicationController(QObject):
         return ""
 
     def _submit(self, action, value=None):
-        if self._closing or self.busy or (action not in ("load", "spin", "retry") and self.blocked()):
+        if self._closing or self.busy or (action not in ("load", "spin", "retry", "statistics") and self.blocked()):
             return False
         self.busy = True
         self.busy_changed.emit(True)
@@ -110,6 +124,11 @@ class ApplicationController(QObject):
     def select_profile(self, player_id):
         return self._submit("select", player_id)
 
+    def load_statistics(self):
+        if self.session is None or self.navigation_blocked():
+            return False
+        return self._submit("statistics", self.session.player_id)
+
     def submit_round(self, retry=False):
         if self._closing or self.busy or self.animating or self.session is None:
             return False
@@ -129,6 +148,12 @@ class ApplicationController(QObject):
             self.busy_changed.emit(False)
             return
         self.busy_changed.emit(False)
+        if action == "statistics":
+            if exc is not None:
+                self.statistics_error.emit(f"Nie można odczytać statystyk i kolekcji: {exc}")
+            else:
+                self.statistics_changed.emit(result)
+            return
         if exc is not None:
             if created is not None:
                 self.error.emit(f"Utworzono profil {created.name}, ale nie można go otworzyć: {exc}. Wybierz go z listy.")

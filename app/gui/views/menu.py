@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLabel,
 
 class MenuView(QWidget):
     game_requested = Signal()
+    statistics_requested = Signal()
     change_profile_requested = Signal()
     exit_requested = Signal()
 
@@ -45,7 +46,11 @@ class MenuView(QWidget):
         self.game_button.setProperty("variant", "primary")
         self.game_button.clicked.connect(self.game_requested)
         content.addWidget(self.game_button)
-        for text in ("Sklep", "Statystyki", "Ranking", "Ustawienia"):
+        self.statistics_button = QPushButton("Statystyki")
+        self.statistics_button.setObjectName("statisticsButton")
+        self.statistics_button.clicked.connect(self.statistics_requested)
+        content.addWidget(self.statistics_button)
+        for text in ("Sklep", "Ranking", "Ustawienia"):
             button = QPushButton(text)
             button.setEnabled(False)
             button.setToolTip("Niedostępne w tej wersji")
