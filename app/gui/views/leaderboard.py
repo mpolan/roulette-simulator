@@ -40,6 +40,7 @@ class LeaderboardView(QWidget):
             QTableWidget { background: #0C141D; alternate-background-color: #121D27;
                            border: 1px solid #34424E; border-radius: 6px; gridline-color: #26333E;
                            selection-background-color: #30463F; selection-color: #F0EDE5; }
+            QTableWidget:focus { border-color: #F5D58C; }
             QHeaderView::section { background: #17232D; color: #F5D58C; padding: 8px 5px;
                                    border: none; border-bottom: 1px solid #A58B58; font-weight: 600; }
         """)
@@ -128,6 +129,7 @@ class LeaderboardView(QWidget):
             if active:
                 active_position = position
             badges = " ".join(badge.symbol for badge in entry.badges)
+            badge_names = ", ".join(f"{badge.symbol} {badge.name}" for badge in entry.badges)
             name = f"{badges} {entry.player_name}" if badges else entry.player_name
             if active:
                 name += " (Ty)"
@@ -151,7 +153,7 @@ class LeaderboardView(QWidget):
                 font = item.font()
                 font.setBold(active or (column == 0 and position <= 3))
                 item.setFont(font)
-                item.setToolTip(", ".join(f"{badge.symbol} {badge.name}" for badge in entry.badges) if column == 1 else "")
+                item.setToolTip(entry.player_name + (f"\n{badge_names}" if badge_names else "") if column == 1 else "")
                 item.setData(Qt.ItemDataRole.UserRole, entry.player_id)
 
         threshold = LeaderboardService.MIN_ROUNDS_FOR_WIN_RATE

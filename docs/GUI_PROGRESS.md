@@ -3,18 +3,18 @@
 ## Stan i bramka akceptacji
 
 - Aktualizacja: 2026-11-15.
-- Aktualnie zaakceptowany ukończony etap: **Etap 6**, przez wiadomość `ZATWIERDZAM ETAP 6 — PRZEJDŹ DO ETAPU 7`.
-- Etap 7: **ukończony; oczekiwanie na akceptację wyniku**. Etapy 8–9 nierozpoczęte.
+- Aktualnie zaakceptowany ukończony etap: **Etap 7**, przez wiadomość `ZATWIERDZAM ETAP 7 — PRZEJDŹ DO ETAPU 8`.
+- Etap 8: **ukończony; oczekiwanie na akceptację wyniku**. Etap 9 nierozpoczęty.
 - Po ręcznym sprawdzeniu użytkownik potwierdził działanie Etapu 3 i zlecił wyłącznie korektę zamykania GUI. Korekta opisana poniżej nie stanowi akceptacji Etapu 4.
 - Etap 0: ukończony i zaakceptowany.
 - Gałąź: `codex`; początkowy commit: `4ba0069f25eb652917a039f76c634fdd1d8d4072` (`Roulette MVP 3.0`). Początkowy status czysty, brak wcześniejszych zmian użytkownika.
 - Ostatni commit konfiguracji: `7c5bacfcebe0bf0af4fbbcc4d40d39e2a1e9de38` — `chore(gui): configure project agents` (13 plików: AGENTS i konfiguracja ról).
-- Ostatni commit poprzedniego etapu: `dd8690c` — leaderboard Etapu 6.
+- Ostatni commit poprzedniego etapu: `a7a1a6d` — Prestige Shop Etapu 7.
 - Ostatni commit implementacji Etapu 1: `69a187fd4395664903697f3ba23a7d13a008a1c3` — `feat(gui): bootstrap Qt and add baseline regressions`.
 - Ostatni commit implementacji Etapu 2: `99f2963cd7f82fbd8746b0bf3d94c578b473f110` — `feat(gui): add main window and player profiles`.
 - Ostatni commit implementacji Etapu 3: `e475c30ea7e0af58f324d6efddf26090bf11b52b` — `feat(gui): add graphical roulette betting table`.
 - Ostatni commit bieżącej dokumentacji: do ustalenia przez `git log -1 --format="%H %s" -- docs/GUI_PROGRESS.md`; SHA zostanie podany w raporcie czatu. Własnego SHA nie wpisujemy do treści tego samego commita.
-- Kontynuacja do Etapu 8 wyłącznie po: `ZATWIERDZAM ETAP 7 — PRZEJDŹ DO ETAPU 8`.
+- Kontynuacja do Etapu 9 wyłącznie po: `ZATWIERDZAM ETAP 8 — PRZEJDŹ DO ETAPU 9`.
 
 | Etap | Stan | Akceptacja |
 | --- | --- | --- |
@@ -25,8 +25,8 @@
 | 4 — Koło i animacja | Ukończony | Udzielona |
 | 5 — Statystyki | Ukończony | Udzielona |
 | 6 — Leaderboard | Ukończony | Udzielona |
-| 7 — Prestige Shop | Ukończony | Oczekiwana po raporcie |
-| 8 — UX i wydajność | Nierozpoczęty | Brak |
+| 7 — Prestige Shop | Ukończony | Udzielona |
+| 8 — UX i wydajność | Ukończony | Oczekiwana po raporcie |
 | 9 — Testy i wydanie | Nierozpoczęty | Brak |
 
 ## Ustalenia Etapu 0
@@ -231,6 +231,16 @@ Commit implementacji: **`e475c30ea7e0af58f324d6efddf26090bf11b52b`**, `feat(gui)
 - **Przegląd koordynatora:** brak istotnych uwag; potwierdzono wykorzystanie publicznego API i zachowanie blokad, brak SQL/ręcznej zmiany salda, trwałość widgetów. Jeden natywny podgląd Qt Windows na tymczasowej bazie: zakup Bronze Roller przez Enter, saldo 15000→12500$ w sesji i repozytorium, odznaka w statystykach i rankingu kolekcjonerów, Esc/menu i poprawne zamknięcie. Obejrzano 900×650 i 740×560; zrzut `docs/images/gui-stage7-shop-900x650.png`. Bez awarii Qt; nie badano wszystkich DPI ani EXE.
 - Kontrole domykające: diff/check i przegląd jawnego staged diffu, niezmienność zamrożonego silnika/usług/persystencji/TUI oraz zależności. Hash roboczej bazy bez zmian względem początku etapu: **`C12BEE304B422F5D59C252A2207AA2919141817C96857FD451A62B5E862161EA`** (zastany stan po ręcznych testach zachowany). Wszystkie kontrole zapisujące dane używały baz tymczasowych, bez seedera. SHA w `git log -1` i raporcie czatu. Etap 8 nierozpoczęty.
 
+## Etap 8 — UX, wygląd i wydajność
+
+- Akceptacja w załączonym poleceniu użytkownika: `ZATWIERDZAM ETAP 7 — PRZEJDŹ DO ETAPU 8`; start na czystym `codex`, HEAD `a7a1a6d`. Wykonawca **ux_optimizer / ux_stage8, GPT-6.1 Sol / high**, zgodnie z natywną rolą i TOML. Koordynator: audyt natywnego wyglądu, jeden przegląd zmian, dokumentacja i Git. Bez Astry, dalszej delegacji i zmian architektury.
+- Audyt objął profile, menu, CHIPS, CLASSIC, koło/wynik, statystyki, ranking i sklep w **900×650, 740×560 i 1280×800**. Rzeczywista usterka: lista profili przy 740×560 zwijała się niemal do poziomego scrollbara. Mniejsze odstępy i minimalna wysokość listy zapewniają trzy pełne wiersze, dostęp do tworzenia/wyboru/wyjścia i pionowe przewijanie większej listy; pełna nazwa i saldo w podpowiedzi. Końcowy natywny viewport ma 138 px i 8 px odstępu przed przyciskiem wyboru, bez wymuszania większego okna.
+- Zmieniono tylko `app/gui/views/profiles.py`, `views/game.py`, `views/leaderboard.py`, `widgets/chip_picker.py` i nowy `tests/gui/test_accessibility.py`. Usunięto chwilowe wyłączanie przycisku Usuń podczas zwykłego refresh, które gubiło fokus. Stała grubość ramki i czytelny disabled dla combo gry, osobne oznaczenia wyboru/fokusu/hover żetonów, fokus tabeli rankingu i tooltip pełnej nazwy. Pozostałe działające układy i motyw zachowano.
+- **Wydajność:** stół nadal aktualizuje zmienione pola ze snapshotów, koszyk zachowuje tożsamość i wiersze, koło odrysowuje siebie, sklep aktualizuje trwałe karty. Pojedynczy pomiar wykonawcy przy identycznych danych statystyk/rankingu: **0 StyleChange / 0 dataChanged**; nie dodawano zbędnego cache. Natywny timer GUI 10 ms podczas animacji: przed zmianą 311 wywołań, maksymalna przerwa 50,8 ms; po zmianie 319 i 44,4 ms. To próbki responsywności na tym komputerze, nie benchmark ani gwarancja FPS. Brak podstaw do przebudowy animacji lub dodatkowych mechanizmów optymalizacji.
+- **Kontrole celowane:** wykonawca **10 passed in 0.46s** — cztery nowe przypadki (małe profile/klawiatura, zachowanie fokusu Usuń i Enter, wybór żetonów, pełna nazwa w rankingu) oraz sześć istniejących przypadków myszy/skrótu Alt, częściowych aktualizacji stołu/koszyka i trzech rozmiarów sceny. Koordynator **10 passed in 3.01s** — granice importów, start z pętlą GUI, potwierdzenie zwrotu zakładów przy zamknięciu, trzy sposoby wyjścia i blokada pending. Bez pełnej regresji i serii stabilności Qt.
+- **Przegląd i wygląd:** brak istotnych uwag. Porównano natywne zrzuty wszystkich ekranów przed/po; po końcowej korekcie odstępów odświeżono tylko profile. Kontrole używały baz tymczasowych, bez seedera. Zapisana runda zatrzymała koło na wyniku silnika 32, GUI reagowało, zamknięcie po animacji było poprawne. Zrzuty: `gui-stage8-profiles-740x560.png`, `gui-stage8-table-900x650.png`, `gui-stage8-result-900x650.png` i zestawienie `gui-stage8-overview-900x650.png` w `docs/images/`. Bez awarii Qt; bez kontroli wszystkich DPI i EXE.
+- Kontrole domykające: diff/check, przegląd jawnego staged diffu i pusty diff zamrożonych katalogów/TUI względem początku migracji. Hash roboczej bazy bez zmian względem początku etapu: **`258C5B28B07E0B7D196A72AB16D250461C125EB93D364AB2EA81A07D0C292D15`**; zastany stan po testach użytkownika zachowany. Bez zmian kontrolerów, usług, persystencji i zależności. SHA w `git log -1` i raporcie czatu. Etap 9 nierozpoczęty.
+
 ## Kluczowe decyzje i ograniczenia
 
 - `Game` jest jedynym źródłem zakładów, salda sesji i limitów; `RoundResult` źródłem rozliczenia i wyniku koła.
@@ -249,9 +259,9 @@ Commit implementacji: **`e475c30ea7e0af58f324d6efddf26090bf11b52b`**, `feat(gui)
 1. Otwórz ten sam projekt na `codex`; przeczytaj AGENTS, plan, dziennik i sprawdź status oraz HEAD. Nie klonuj repozytorium.
 2. Przy nowej sesji sprawdź dostępność nazwanych ról w natywnym narzędziu delegacji. W razie wątpliwości wykonaj krótki audyt do odczytu przez `architecture_auditor`; nie diagnozuj bieżącej sesji wyłącznie przez osobny CLI.
 3. Nie zmieniaj zaufania projektu, globalnych uprawnień ani sandboxa. Zachowaj model koordynatora GPT-6.1 Sol / High i limit 2 subagentów.
-4. Po ukończeniu Etapu 7 dalsza praca wymaga dokładnie `ZATWIERDZAM ETAP 7 — PRZEJDŹ DO ETAPU 8`. Sama działająca delegacja nie zatwierdza kolejnych etapów.
+4. Po ukończeniu Etapu 8 dalsza praca wymaga dokładnie `ZATWIERDZAM ETAP 8 — PRZEJDŹ DO ETAPU 9`. Sama działająca delegacja nie zatwierdza kolejnych etapów.
 5. Wykonać wyłącznie następny zaakceptowany etap, testy i kontrolę diffu, uzupełnić dziennik, commit i zatrzymać się.
 
 ## Następny etap — jeszcze nieautoryzowany
 
-Etap 8: UX i wydajność — rozmiary okien, klawiatura, focus/hover, dostępność, spójność i responsywność. Do wykonania dopiero po akceptacji Etapu 7.
+Etap 9: końcowa regresja, kontrola zgodności GUI/TUI i danych, dokumentacja użytkownika oraz świeży build GUI EXE. Do wykonania dopiero po akceptacji Etapu 8.

@@ -14,6 +14,7 @@ class ChipButton(QPushButton):
         self.value = value
         self.setCheckable(True)
         self.setAutoExclusive(True)
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover)
         self.setFixedSize(52, 52)
         # Ogólny QSS przycisków ustawia min-height i potrafi obniżyć minimum
         # nadane przez setFixedSize; krążek wymaga własnej pełnej geometrii.
@@ -26,10 +27,12 @@ class ChipButton(QPushButton):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         color = QColor(CHIP_COLORS.get(self.value, "#F5D58C"))
+        if self.isEnabled() and self.underMouse():
+            color = color.lighter(115)
         if not self.isEnabled():
             color.setAlpha(100)
         painter.setBrush(color)
-        painter.setPen(QPen(QColor("#F5D58C" if self.isChecked() or self.hasFocus() else "#34424E"), 3))
+        painter.setPen(QPen(QColor("#F5D58C" if self.isChecked() else "#34424E"), 3))
         painter.drawEllipse(3, 3, 46, 46)
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.setPen(QPen(QColor("#17232D"), 2, Qt.PenStyle.DashLine))
@@ -40,6 +43,10 @@ class ChipButton(QPushButton):
         font.setPixelSize(15)
         painter.setFont(font)
         painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, str(self.value))
+        if self.hasFocus():
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.setPen(QPen(QColor("#F0EDE5"), 2, Qt.PenStyle.DashLine))
+            painter.drawEllipse(1, 1, 50, 50)
 
 
 class ChipPicker(QWidget):

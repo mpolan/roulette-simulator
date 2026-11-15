@@ -23,9 +23,10 @@ class GameView(QWidget):
         self._session = None
         self.setObjectName("gameView")
         self.setStyleSheet("QWidget#gameView { background: #080D14; } "
-                           "QComboBox { background: #17232D; border: 1px solid #A58B58; "
+                           "QComboBox { background: #17232D; border: 2px solid #A58B58; "
                            "border-radius: 4px; padding: 4px 8px; min-height: 22px; } "
                            "QComboBox:focus { border: 2px solid #F5D58C; } "
+                           "QComboBox:disabled { color: #78838B; background: #101923; border-color: #26333E; } "
                            "QComboBox QAbstractItemView { background: #17232D; color: #F0EDE5; } "
                            "QPushButton { padding: 5px 10px; min-height: 20px; } "
                            "QLineEdit { padding: 4px 8px; min-height: 22px; } "
@@ -296,8 +297,8 @@ class GameView(QWidget):
         for widget in (self.mode_combo, self.betting_controls, self.table, self.cart):
             widget.setEnabled(not locked)
         self.back_button.setEnabled(not locked)
-        self.remove_button.setEnabled(False)
         if busy:
+            self.remove_button.setEnabled(False)
             return
         with QSignalBlocker(self.mode_combo):
             self.mode_combo.setCurrentIndex(self.mode_combo.findData(controller.mode))

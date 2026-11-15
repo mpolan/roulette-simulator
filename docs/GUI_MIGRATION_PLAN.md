@@ -1,6 +1,6 @@
 # Obsidian Royale — plan migracji TUI → GUI
 
-Data audytu: 2026-11-15. Etapy 0–6 ukończone i zaakceptowane; aktualna jednostka pracy: **wyłącznie Etap 7**. Etap 8 wymaga kolejnej akceptacji.
+Data audytu: 2026-11-15. Etapy 0–7 ukończone i zaakceptowane; aktualna jednostka pracy: **wyłącznie Etap 8**. Etap 9 wymaga kolejnej akceptacji.
 
 ## 1. Stan wejściowy i granice
 
@@ -96,6 +96,8 @@ Etap 5 dodaje StatisticsView i BadgeCollection oraz pozycję Statystyki w menu. 
 Etap 6 dodaje trwały LeaderboardView oraz pozycję Ranking w menu. Dotychczasowy worker wywołuje LeaderboardService.get_leaderboard(sort_by); widok zachowuje kolejność i kwalifikację serwisu dla wszystkich czterech kryteriów. Tabela aktualizuje komórki, wyróżnia podium i aktywny profil, obsługuje puste wyniki, odświeżenie i błędy. Zmiana kryterium usuwa poprzedni wynik przed odczytem, zmiana profilu resetuje widok. Bez dodatkowego sortowania, SQL ani zmian silnika.
 
 Etap 7 dodaje ShopView i trwałe BadgeCard oraz pozycję Prestige Shop w menu. Ten sam worker pobiera katalog/kolekcję przez ShopService i wykonuje buy_badge(session, badge_id). Usługa pozostaje jedynym źródłem transakcji i zmiany salda. Busy blokuje ponowne żądania i nawigację, aktywne zakłady/pending/animacja blokują zakupy. Po sukcesie GUI oznacza zakupioną kartę z PurchasedBadge i czyta saldo sesji, bez odejmowania ceny. Błąd odczytu/zakupu wymaga odświeżenia kolekcji przed kolejną próbą; GUI nie ponawia transakcji automatycznie. Statystyki i ranking pobierają aktualne odznaki po wejściu na ich ekran.
+
+Etap 8 obejmuje celowane poprawki prezentacji po audycie wszystkich widoków w 900×650, 740×560 i 1280×800: czytelność listy profili, zachowanie fokusu przy odświeżeniu gry, stany kontrolek i dostęp do długich nazw w rankingu. Zachowujemy obecną architekturę oraz częściowe aktualizacje stołu, koszyka, koła, kart i tabel. Nie dodajemy kolejnych warstw cache tam, gdzie Qt już pomija identyczne wartości. Pełna regresja i wydanie pozostają zakresem Etapu 9.
 
 Motyw Qt zachowuje paletę TUI: #080D14, #121D27, #F5D58C, #A58B58 i #F0EDE5. Widoki mają wspólne panele, przyciski, stany focus/hover/disabled, a nazwy użytkowników są zwykłym tekstem. Dostępne są mysz, Tab/Shift+Tab, Enter/Spacja i Esc przy powrocie. Funkcje późniejszych etapów pozostają widoczne jako nieaktywne pozycje menu. Instrukcja ręcznego sprawdzenia: `GUI_MANUAL_CHECK.md`.
 

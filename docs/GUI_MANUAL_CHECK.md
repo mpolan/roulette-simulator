@@ -1,4 +1,4 @@
-# Obsidian Royale — ręczne sprawdzenie Etapu 7
+# Obsidian Royale — ręczne sprawdzenie Etapu 8
 
 ## Uruchomienie
 
@@ -111,10 +111,19 @@ Historyczne kontrole Etapu 3, w tym próby natywnego Qt i ograniczenia diagnozy 
 6. Wybierz **Powrót do menu** lub **Esc**, otwórz **Statystyki**, następnie **Ranking → Kolekcjonerzy**. Zakupiona odznaka i zaktualizowane saldo powinny być widoczne w obu ekranach. Zmień profil i sprawdź, czy sklep pokazuje nowego gracza oraz jego kolekcję.
 7. **Tab/Shift+Tab** przechodzi po dostępnych przyciskach, **Enter/Spacja** uruchamia zakup/odświeżenie/powrót, **Esc** wraca do menu. Sprawdź 900×650 i 740×560, w tym dojście klawiaturą do niższych kart. Zamknięcie z aktywnymi zakładami zachowuje dotychczasowy dialog anulowania.
 
+## UX i rozmiary — Etap 8
+
+1. Przy **740×560** otwórz profile z kilkoma graczami: lista powinna pokazać co najmniej trzy wiersze i przewijać się pionowo. Przy długiej nazwie najedź na pozycję, aby odczytać pełną nazwę i saldo. Wybór, tworzenie i Wyjdź pozostają dostępne; sprawdź też błąd pustej/istniejącej nazwy.
+2. Przejdź przez wszystkie ekrany przy **900×650** i **1280×800**, a potem **740×560**. Menu, statystyki i sklep przewijają zawartość, tabela rankingu ma własne przewijanie. Sprawdź dojście Tabem do dolnych kontrolek, Shift+Tab wstecz, Enter/Spację i Esc. Pozostałe skróty gry opisano wyżej.
+3. W grze postaw dwa żetony. Ustaw fokus na **Usuń** i użyj Enter: po usunięciu pierwszej pozycji fokus ma pozostać na przycisku, aby można było usunąć następną. Złoty obwód żetonu oznacza wybrany nominał; jasny przerywany obwód oznacza fokus klawiatury. Samo przeniesienie fokusu nie zmienia nominału — zatwierdź Enter/Spacją.
+4. W rankingu przejdź Tabem na tabelę i sprawdź wyróżnienie fokusu. Przy długiej nazwie najedź na komórkę gracza: podpowiedź zawiera pełną nazwę i nazwy odznak.
+5. Uruchom SPIN. Podczas zapisu/animacji kontrolki zakładów, nawigacja i zamknięcie pozostają zablokowane, a koło i okno reagują. Po zakończeniu wróć do obstawiania. Potwierdzenie anulowania zakładów i pending zachowują wcześniejsze działanie.
+
 ## Zrzuty kontrolne
 
-Etap 7: [Prestige Shop, 900 × 650](images/gui-stage7-shop-900x650.png), natywny backend Qt Windows, demonstracyjny zakup na tymczasowej bazie. Sprawdzono też przewijany układ 740 × 560 oraz odznakę w statystykach i rankingu.
+Etap 8: [profile 740×560](images/gui-stage8-profiles-740x560.png), [stół 900×650](images/gui-stage8-table-900x650.png), [koło i wynik 900×650](images/gui-stage8-result-900x650.png), [zestawienie ośmiu widoków w oknie 900×650](images/gui-stage8-overview-900x650.png). Natywny Qt Windows, demonstracyjne dane w tymczasowej bazie; audyt obejmował także 740×560 i 1280×800.
 
+Etap 7: [Prestige Shop, 900 × 650](images/gui-stage7-shop-900x650.png), natywny backend Qt Windows, demonstracyjny zakup na tymczasowej bazie. Sprawdzono też przewijany układ 740 × 560 oraz odznakę w statystykach i rankingu.
 
 Etap 6: [ranking, 900 × 650](images/gui-stage6-leaderboard-900x650.png), natywny backend Qt Windows, wyłącznie demonstracyjne profile/rundy/zakupy na tymczasowej bazie. Obejrzano także 740 × 560.
 
@@ -132,7 +141,7 @@ Zrzuty wykonano przez QWidget.grab() z natywnego backendu Qt Windows, na profilu
 ## Testy automatyczne
 
 ```powershell
-.\venv\Scripts\python.exe -X faulthandler -m pytest -q tests/gui/test_shop.py tests/test_import_boundaries.py
+.\venv\Scripts\python.exe -X faulthandler -m pytest -q tests/gui/test_accessibility.py tests/test_import_boundaries.py
 ```
 
 Testy przełączają ścieżkę SQLite na pliki tymczasowe; nie korzystają z roboczej bazy graczy.
