@@ -5,6 +5,7 @@
 - Aktualizacja: 2026-11-15.
 - Aktualnie zaakceptowany ukończony etap: **Etap 2**, przez wiadomość `ZATWIERDZAM ETAP 2 — PRZEJDŹ DO ETAPU 3`.
 - Etap 3: **ukończony; oczekiwanie na akceptację wyniku**. Etapy 4–9 nierozpoczęte.
+- Po ręcznym sprawdzeniu użytkownik potwierdził działanie Etapu 3 i zlecił wyłącznie korektę zamykania GUI. Korekta opisana poniżej nie stanowi akceptacji Etapu 4.
 - Etap 0: ukończony i zaakceptowany.
 - Gałąź: `codex`; początkowy commit: `4ba0069f25eb652917a039f76c634fdd1d8d4072` (`Roulette MVP 3.0`). Początkowy status czysty, brak wcześniejszych zmian użytkownika.
 - Ostatni commit konfiguracji: `7c5bacfcebe0bf0af4fbbcc4d40d39e2a1e9de38` — `chore(gui): configure project agents` (13 plików: AGENTS i konfiguracja ról).
@@ -179,6 +180,18 @@ Aktualny start prowadzi do ekranu profili, nie do przejściowego okna Etapu 1. U
 ### Commity i zatrzymanie
 
 Commit implementacji: **`e475c30ea7e0af58f324d6efddf26090bf11b52b`**, `feat(gui): add graphical roulette betting table` — dokładnie dziesięć jawnie wskazanych plików GUI/testów. Przed commitem zaliczono `git diff --check`, `git diff --cached --check`, przegląd całego staged diffu i ponowny pusty diff zamrożonych źródeł/TUI. Po commicie sprawdzono SHA oraz status: pozostała wyłącznie dokumentacja i zrzuty przygotowane do osobnego commita. Jego SHA jest dostępny w `git log` i raporcie czatu; nie wpisujemy własnego SHA w treść tego samego commita. Bez push/merge/rebase, zmian innych gałęzi ani artefaktów wydania. Następna dozwolona jednostka pracy, dopiero po dokładnej akceptacji, to Etap 4 opisany poniżej.
+
+## Korekta Etapu 3 — potwierdzenie anulowania zakładów przy zamykaniu
+
+- Start: czyste `codex`, HEAD `bbbf2e99a8342f1b5ed9ac1da42e5634b940a1ae`. Zakres zlecony przez użytkownika: wyłącznie zamykanie GUI, testy, QA i commit; Etap 4 nadal nierozpoczęty.
+- Implementacja koordynatora: `app/gui/main_window.py`, `app/gui/controllers/application_controller.py`. Bez zakładów zwykłe zamknięcie; z zakładami pojedynczy nieblokujący dialog **Anuluj zakłady i zamknij / Wróć do gry**. Enter domyślnie, Esc i X dialogu zachowują sesję, saldo i zakłady oraz wracają do stołu. Systemowy X, Alt+F4, Ctrl+Q i przyciski Wyjdź korzystają ze wspólnego closeEvent.
+- Potwierdzenie używa `shutdown(cancel_bets=True)` i `Game.remove_bet()` z każdą oryginalną referencją Bet. Saldo zwraca silnik, bez ręcznego credit, spin/save, SQL i zmian reguł. Pending/busy/animacja/zamykanie są ponownie sprawdzane po decyzji użytkownika. Pending nadal blokuje zamknięcie i pokazuje komunikat o ponowieniu zapisu. Nie zmieniono blokad przełączania profilu ani sekwencji wygaszania QThread.
+- Nowe `tests/gui/test_close.py`: 15 przypadków obejmujących zwykłe zamknięcie, potwierdzenie i zwrot osobnych identycznych pozycji, anulowanie dialogu/Enter/Esc/X, ponowny close bez drugiego dialogu, responsywność pętli, Alt+F4/Ctrl+Q/Wyjdź, rzeczywisty pending, ponowną kontrolę pending po otwarciu dialogu i busy/animację. Dostosowano wyłącznie oczekiwania zamykania w `tests/gui/test_profiles.py` i `tests/gui/test_game_navigation.py`.
+- **Stabilność Qt — nowe dowody:** pierwsze dwa przebiegi nowych testów zgłosiły Windows access violation na granicy kolejnych okien. Drugi ślad faulthandler jawnie wskazał **Garbage-collecting w workerze profili** podczas `create_game_session`, równolegle z głównym wątkiem w QTest.qWait. Zamknięcie ukrywało testowe okna, pozostawiając grafy QObject do późniejszego GC. Nowa fixture po zakończonym shutdown jawnie wykonuje deleteLater i dostarcza DeferredDelete w wątku GUI. Nie zmieniano produkcyjnego modelu własności ani WA_DeleteOnClose: `run()` utrzymuje referencję okna przez całe exec.
+- Po lokalnym sprzątaniu fixture: **37 passed in 18.23s** (zamykanie/profile/nawigacja), następnie **pełna regresja 687 passed in 22.27s**, oba z `-X faulthandler` i bez awarii. Dowody wskazują udział GC/workera w awarii testowej, lecz nie stanowią dowodu definitywnego usunięcia historycznej przyczyny Qt.
+- Niezależny audyt: natywna rola **qa_reviewer / qa_stage3, GPT-6 Astra / medium**, wyłącznie do odczytu, bez dalszej delegacji. Potwierdzono model/effort w narzędziu i TOML. QA zaliczył **15 passed in 6.28s** z faulthandler i watchdogiem, bez crash; **brak blokujących P1/P2**. Pojedynczy probe GC nie odtworzył awarii. Eksperymentalny globalny plugin sprzątania testów zawiesił przebieg, został przerwany i **nie został wdrożony**; finalne wyniki pochodzą z repo bez tego pluginu.
+- Dokumenty: ten dziennik, `docs/GUI_MIGRATION_PLAN.md` (wyjątek zamknięcia po potwierdzeniu), `docs/GUI_MANUAL_CHECK.md` (instrukcja X/skróty/dialog). Nie zmieniano stołu, koła, TUI, zamrożonego silnika/usług/persystencji, zależności ani konfiguracji agentów. Robocza baza nie była otwierana; jej SHA-256 po kontroli jest porównywany z początkowym `FAF650B44BDB7BD37BD9639D3872F18A7AEAF5E4BA00C9EE72B7A3FA8D98FD29`.
+- Weryfikacja interakcji: Qt offscreen/QTest na tymczasowych bazach. Nie wykonano w tej korekcie ręcznego klikania natywnego X ani kontroli wszystkich DPI. Systemowe zamknięcie korzysta z badanego closeEvent. Nie uruchamiano seedera ani buildu EXE. SHA poprawki dostępny w `git log -1` i raporcie czatu; nie wpisujemy własnego SHA w treść commita.
 
 ## Kluczowe decyzje i ograniczenia
 

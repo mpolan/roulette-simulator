@@ -117,5 +117,6 @@ def test_tab_and_active_bet_block(qapp, initialized_db, wait_until):
     qapp.processEvents()
     assert window.isVisible()
     assert window.controller.session is session
+    window._close_dialog.reject()
     session.game.remove_bet(bet)
     close_window(window, wait_until)

@@ -1,5 +1,6 @@
 from PySide6.QtCore import QEvent, Qt, Slot
-from PySide6.QtWidgets import QMainWindow, QPushButton, QStackedWidget
+from PySide6.QtGui import QKeySequence, QShortcut
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QPushButton, QStackedWidget
 
 from gui.controllers.application_controller import ApplicationController
 from gui.controllers.game_controller import GameController
@@ -26,6 +27,12 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.game_view)
         self._started = False
         self._shutdown_complete = False
+        self._close_dialog = None
+        self._close_shortcuts = []
+        for sequence in ("Alt+F4", "Ctrl+Q"):
+            shortcut = QShortcut(QKeySequence(sequence), self)
+            shortcut.activated.connect(self.close)
+            self._close_shortcuts.append(shortcut)
         self.profiles_view.create_requested.connect(self.controller.create_profile)
         self.profiles_view.select_requested.connect(self.controller.select_profile)
         self.profiles_view.refresh_requested.connect(self.refresh_profiles)
@@ -86,6 +93,9 @@ class MainWindow(QMainWindow):
             self.controller.blocked_reason(), back_blocked=self.controller.navigation_blocked(),
         )
         self.menu_view.set_blocked(blocked, self.controller.blocked_reason())
+        for button in (self.menu_view.exit_button, self.profiles_view.exit_button):
+            button.setEnabled(not self.controller.navigation_blocked())
+            button.setToolTip(self.controller.blocked_reason() if not button.isEnabled() else "")
         self.menu_view.game_button.setEnabled(
             self.controller.session is not None and not self.controller.navigation_blocked()
         )
@@ -124,10 +134,44 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if self._shutdown_complete:
             event.accept()
-        else:
-            event.ignore()
-            if not self.controller.shutdown():
+            return
+        event.ignore()
+        if self._close_dialog is not None:
+            self._close_dialog.raise_()
+            self._close_dialog.activateWindow()
+            return
+        if self.controller.navigation_blocked():
+            self.statusBar().showMessage(self.controller.blocked_reason())
+            return
+        session = self.controller.session
+        if session is not None and session.game.current_bets:
+            dialog = QMessageBox(self)
+            dialog.setWindowTitle("Zamknąć Obsidian Royale?")
+            dialog.setIcon(QMessageBox.Icon.Question)
+            dialog.setText("Masz aktywne zakłady. Anulować je i zamknąć aplikację?")
+            dialog.setInformativeText("Stawki zostaną zwrócone. Runda nie zostanie rozegrana.")
+            dialog.addButton("Anuluj zakłady i zamknij", QMessageBox.ButtonRole.DestructiveRole)
+            back = dialog.addButton("Wróć do gry", QMessageBox.ButtonRole.RejectRole)
+            dialog.setDefaultButton(back)
+            dialog.setEscapeButton(back)
+            dialog.finished.connect(self._close_dialog_finished)
+            self._close_dialog = dialog
+            dialog.open()
+            return
+        self.controller.shutdown()
+
+    def _close_dialog_finished(self, _result):
+        dialog = self._close_dialog
+        self._close_dialog = None
+        confirmed = dialog.buttonRole(dialog.clickedButton()) == QMessageBox.ButtonRole.DestructiveRole
+        dialog.deleteLater()
+        if confirmed:
+            # Kontroler ponownie sprawdza pending/busy/animację po decyzji użytkownika.
+            if not self.controller.shutdown(cancel_bets=True):
                 self.statusBar().showMessage(self.controller.blocked_reason())
+            self.game_controller.refresh()
+        else:
+            self.show_game()
 
     def _finish_close(self):
         self._shutdown_complete = True

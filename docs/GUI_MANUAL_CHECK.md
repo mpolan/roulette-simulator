@@ -35,7 +35,15 @@ Normalny start korzysta z istniejącej `data/roulette.db`. Utworzone ręcznie pr
 
 Podczas odczytu, tworzenia lub otwierania profilu niedozwolone akcje są chwilowo wyłączone. Zamykanie podczas operacji jest odrzucane z komunikatem; po jej zakończeniu można ponowić zamknięcie.
 
-Zmiana profilu, jego utworzenie i zamknięcie są blokowane również przy aktywnych zakładach lub niezapisanej rundzie. Powrót do menu jest blokowany przy niezapisanej rundzie lub animacji; same aktywne zakłady nie gubią sesji przy powrocie, tak jak w TUI. Pending i animację sprawdzają testy integracyjne z istniejącym `GameSession`, bez dodawania przycisków diagnostycznych do aplikacji.
+Zmiana profilu i jego utworzenie pozostają blokowane przy aktywnych zakładach lub niezapisanej rundzie. Zamknięcie przy aktywnych zakładach wymaga potwierdzenia ich anulowania; niezapisana runda nadal blokuje wyjście. Powrót do menu jest blokowany przy niezapisanej rundzie lub animacji; same aktywne zakłady nie gubią sesji przy powrocie, tak jak w TUI. Pending i animację sprawdzają testy integracyjne z istniejącym `GameSession`, bez dodawania przycisków diagnostycznych do aplikacji.
+
+## Zamykanie aplikacji — poprawka po ręcznym sprawdzeniu Etapu 3
+
+1. Bez zakładów zamknij aplikację przez systemowy **X**, **Alt+F4**, **Ctrl+Q** albo **Wyjdź**. Oczekiwane: zwykłe zamknięcie bez potwierdzenia, po zakończeniu workera Qt.
+2. Postaw żeton i dodaj identyczny zakład CLASSIC. Użyj X lub skrótu zamykania. Dialog oferuje **Anuluj zakłady i zamknij** oraz **Wróć do gry**. Samo pokazanie dialogu nie zmienia salda ani koszyka; okno nie przyjmuje innych interakcji do podjęcia decyzji.
+3. Wybierz **Wróć do gry**, naciśnij **Esc** albo zamknij sam dialog. **Enter** na domyślnym przycisku także wraca do gry. Oczekiwane: ta sama sesja, wszystkie zakłady i saldo bez zmian, widoczny stół.
+4. Ponów zamknięcie i wybierz **Anuluj zakłady i zamknij**. Oczekiwane: każda oryginalna pozycja jest usunięta przez `Game.remove_bet()`, wszystkie stawki zwrócone w sesji, stosy puste, aplikacja zamknięta. Nie następuje losowanie ani zapis rundy. Anulowanie nie wymaga aktualizacji bazy, ponieważ samo obstawianie nie zapisywało salda w SQLite.
+5. Przy `has_pending_round` nie ma opcji anulowania ani zamknięcia: pasek stanu informuje **Najpierw ponów zapis oczekującej rundy**. Busy i animacja także zachowują dotychczasowe blokady. Stan pending sprawdzają testy; GUI Etapu 3 nadal nie udostępnia spin/retry.
 
 ## Stół i CHIPS
 
@@ -59,7 +67,7 @@ Zmiana profilu, jego utworzenie i zamknięcie są blokowane również przy aktyw
 1. Zaznacz pozycję koszyka i wybierz usunięcie lub wykonaj dwuklik. **Delete/Backspace** usuwa zaznaczoną pozycję. Usunięcie pozycji CHIPS aktualizuje również właściwy stos na stole.
 2. Na stole używaj **strzałek** do zmiany aktywnego pola, **Enter/Spacji** do dodania żetonu lub wyboru pola CLASSIC, **Delete/Backspace** do usunięcia ostatniego żetonu CHIPS. Aktywne pole ma widoczne oznaczenie fokusu.
 3. **Alt+1…5** wybiera nominały w kolejności 5/10/25/50/100, **Alt+C** przełącza CHIPS/CLASSIC. **Tab/Shift+Tab** przechodzi między kontrolkami; **Enter/Spacja** uruchamia przyciski, **Enter** w stawce lub **Ctrl+Enter** w widoku gry zatwierdza CLASSIC.
-4. Naciśnij **Esc** albo **Powrót do menu** z aktywnymi zakładami. W menu saldo odpowiada sesji, a zmiana profilu i zamknięcie są zablokowane. Ponowne wejście w **Gra** pokazuje te same zakłady, tryb i nominał.
+4. Naciśnij **Esc** albo **Powrót do menu** z aktywnymi zakładami. W menu saldo odpowiada sesji, zmiana profilu jest zablokowana, a **Wyjdź** otwiera potwierdzenie anulowania zakładów. Ponowne wejście w **Gra** pokazuje te same zakłady, tryb i nominał.
 5. Usuń wszystkie zakłady. Saldo wraca do wartości sprzed obstawiania, a zmiana profilu i zamknięcie stają się dostępne. Samo obstawianie nie zapisuje rund w SQLite.
 6. Sprawdź okno przy **900 × 650**, **1280 × 800** i **740 × 560**. Stół dopasowuje skalę do miejsca, a koszyk przewija własne pozycje. Cały widok gry nie ma przewijania. Wszystkie pola mają pozostać osiągalne; etykiety liczb i nominały nie powinny się zlewać.
 7. **SPIN pozostaje nieaktywny w Etapie 3**, również z zakładami. Nie uruchamia RNG, zapisu ani rozliczenia. Koło, animacja i spin/save/retry należą do Etapu 4.

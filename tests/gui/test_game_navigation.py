@@ -44,7 +44,7 @@ def test_table_menu_preserves_session_and_updates_balance(game_window):
     assert "975" in view.balance_label.text()
     assert "975" in window.menu_view.balance_label.text()
     assert not window.menu_view.change_button.isEnabled()
-    assert not window.menu_view.exit_button.isEnabled()
+    assert window.menu_view.exit_button.isEnabled()
     QTest.keyClick(view.table, Qt.Key.Key_Escape)
     assert window.stack.currentWidget() is window.menu_view
     assert window.menu_view.game_button.isEnabled()
@@ -55,6 +55,7 @@ def test_table_menu_preserves_session_and_updates_balance(game_window):
     assert session.game.current_bets[0] is bet
     window.close()
     assert window.isVisible()
+    window._close_dialog.reject()
     session.game.remove_bet(bet)
     window.game_controller.refresh()
     assert window.menu_view.change_button.isEnabled()

@@ -74,7 +74,7 @@ class ApplicationController(QObject):
             return "Trwa zamykanie aplikacji."
         if self.session is not None:
             if self.session.has_pending_round:
-                return "Najpierw zapisz oczekującą rundę."
+                return "Najpierw ponów zapis oczekującej rundy."
             if self.session.game.current_bets:
                 return "Najpierw rozlicz lub usuń aktywne zakłady."
         return ""
@@ -129,9 +129,15 @@ class ApplicationController(QObject):
             self.session = result
             self.session_changed.emit(result)
 
-    def shutdown(self):
-        if self.blocked():
+    def shutdown(self, *, cancel_bets=False):
+        if self.navigation_blocked():
             return False
+        if self.session is not None and self.session.game.current_bets:
+            if not cancel_bets:
+                return False
+            game = self.session.game
+            for bet in game.current_bets:
+                game.remove_bet(bet)
         self._closing = True
         self._stop.emit()
         return True
