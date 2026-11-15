@@ -265,3 +265,11 @@ Commit implementacji: **`e475c30ea7e0af58f324d6efddf26090bf11b52b`**, `feat(gui)
 ## Następny etap — jeszcze nieautoryzowany
 
 Etap 9: końcowa regresja, kontrola zgodności GUI/TUI i danych, dokumentacja użytkownika oraz świeży build GUI EXE. Do wykonania dopiero po akceptacji Etapu 8.
+
+## Korekta po ręcznym sprawdzeniu Etapu 8
+
+- Na polecenie użytkownika: jeden widoczny komunikat gry w statusBar (wewnętrzny QLabel pozostaje ukryty), start 1360×900 ograniczony do dostępnego obszaru ekranu oraz grupowanie koszyka i wyniku po typie/polu. Bez przejścia do Etapu 9.
+- Wykonawca grupowania: ux_optimizer / ux_stage8, GPT-6.1 Sol / high; koordynator: rozmiar/start/status, integracja, przegląd i dokumentacja. Pliki: main_window.py, views/game.py, widgets/bet_cart.py; nowe test_grouped_bets.py i test_window_feedback.py.
+- Koszyk pokazuje liczbę i sumę stawek; Usuń/Delete/dwuklik usuwa jeden ostatni oryginalny Bet grupy. Trwałe wiersze i tożsamość zachowane. Wynik sumuje wyłącznie gotowe kwoty BetResult, podsumowanie pozostaje z RoundResult. Bez zmian silnika i zasad rozliczenia.
+- Kontrole: wykonawca 5 passed in 0.42s (2 nowe i 3 istniejące); koordynator w osobnych procesach 1 passed in 0.49s (rozmiar/jeden komunikat), 2 passed in 1.27s (pending i potwierdzenie zwrotu), 1 passed in 1.34s (spin/zapis/animacja). Wcześniejszy wspólny przebieg zatrzymał się po czterech kropkach przy kończeniu i został przerwany; izolowane przebiegi zakończyły się poprawnie. Bez natywnej awarii i bez deklarowania definitywnego rozwiązania historycznego problemu sprzątania Qt.
+- Diff/check i przegląd zmian; zamrożone katalogi i TUI bez zmian. Robocza baza zachowała hash z początku korekty: 6CBCE76A7284635B59005A3EEFADC93D2FFBDDAC5DBA6B8F3EF6FCBB2594244C. Testy wyłącznie na tymczasowych bazach. SHA w raporcie czatu. Etap 9 nadal wymaga zgody.

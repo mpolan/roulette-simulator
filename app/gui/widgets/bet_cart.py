@@ -1,4 +1,4 @@
-"""Koszyk utrzymujący obiekty i wiersze niezależnie od równości Bet."""
+"""Grupy prezentacji zachowujące tożsamość każdego oryginalnego Bet."""
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QAbstractItemView, QListWidget, QListWidgetItem
@@ -10,30 +10,47 @@ class BetCart(QListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.rows = {}
-        self.setAccessibleName("Koszyk zakładów. Delete usuwa zaznaczony zakład.")
+        self._groups = {}
+        self._bets = {}
+        self.setAccessibleName("Koszyk zakładów. Delete usuwa ostatni zakład zaznaczonej grupy.")
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.setToolTip("Dwuklik lub Delete: usuń jedną pozycję i zwróć jej stawkę.")
+        self.setToolTip("Dwuklik lub Delete: usuń jeden ostatni zakład z grupy i zwróć jego stawkę.")
         self.itemDoubleClicked.connect(self._remove_item)
 
     def set_bets(self, bets):
-        active_ids = {id(bet) for bet in bets}
-        for identity in tuple(self.rows):
-            if identity not in active_ids:
-                item = self.rows.pop(identity)
-                self.takeItem(self.row(item))
+        groups = {}
         for bet in bets:
-            if id(bet) not in self.rows:
-                selection = f" {bet.selection}" if bet.selection is not None else ""
-                item = QListWidgetItem(f"{bet.bet_type.name}{selection}   ·   {bet.amount}$")
-                item.setData(Qt.ItemDataRole.UserRole, bet)
+            groups.setdefault((bet.bet_type, bet.selection), []).append(bet)
+        for key in tuple(self._groups):
+            if key not in groups:
+                item = self._groups.pop(key)
+                self.takeItem(self.row(item))
+        self._bets = {key: tuple(group) for key, group in groups.items()}
+        self.rows = {}
+        for key, group in self._bets.items():
+            kind, selection = key
+            item = self._groups.get(key)
+            if item is None:
+                item = QListWidgetItem()
+                item.setData(Qt.ItemDataRole.UserRole, key)
                 self.addItem(item)
+                self._groups[key] = item
+            label = kind.name + (f" {selection}" if selection is not None else "")
+            text = f"{label} · zakładów: {len(group)} · {sum(bet.amount for bet in group)}$"
+            if item.text() != text:
+                item.setText(text)
+            item.setToolTip(text + f"\nUsuń / Delete / dwuklik: usuwa jeden ostatni zakład tej grupy "
+                            f"i zwraca jego stawkę {group[-1].amount}$.")
+            for bet in group:
                 self.rows[id(bet)] = item
         if bets and self.currentItem() is None:
             self.setCurrentRow(0)
 
     def _remove_item(self, item):
         if self.isEnabled() and item is not None:
-            self.remove_requested.emit(item.data(Qt.ItemDataRole.UserRole))
+            group = self._bets.get(item.data(Qt.ItemDataRole.UserRole), ())
+            if group:
+                self.remove_requested.emit(group[-1])
 
     def remove_current(self):
         self._remove_item(self.currentItem())

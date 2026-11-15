@@ -16,7 +16,8 @@ class MainWindow(QMainWindow):
     def __init__(self, controller=None):
         super().__init__()
         self.setWindowTitle("Obsidian Royale")
-        self.resize(900, 650)
+        available = self.screen().availableGeometry()
+        self.resize(min(1360, available.width()), min(900, available.height() - 40))
         self.setMinimumSize(740, 560)
         self.controller = controller if controller is not None else ApplicationController(self)
         self.stack = QStackedWidget()
@@ -115,6 +116,8 @@ class MainWindow(QMainWindow):
         message = self.game_controller.status_message
         if not message and self.controller.navigation_blocked():
             message = self.controller.blocked_reason()
+        if not message and self.stack.currentWidget() is self.game_view:
+            message = self.game_view.message.text()
         self.statusBar().showMessage(message)
         self._update_state()
 
@@ -237,6 +240,7 @@ class MainWindow(QMainWindow):
             return
         self.game_controller.refresh()
         self.stack.setCurrentWidget(self.game_view)
+        self._game_changed()
         if self.game_view.table.isVisible():
             self.game_view.table.setFocus()
         else:

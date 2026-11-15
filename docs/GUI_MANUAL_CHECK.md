@@ -14,7 +14,7 @@ Normalny start korzysta z istniejącej `data/roulette.db`. Utworzone ręcznie pr
 
 ## Ekran profili
 
-1. Sprawdź ciemne tło, złote nagłówki i przyciski oraz wyraźne obramowanie aktywnej kontrolki. Okno domyślnie ma 900 × 650; można je powiększać i zmniejszać do 740 × 560.
+1. Sprawdź ciemne tło, złote nagłówki i przyciski oraz wyraźne obramowanie aktywnej kontrolki. Okno domyślnie ma 1360 × 900 (na mniejszym ekranie dopasowuje start do dostępnego miejsca); można je powiększać i zmniejszać do 740 × 560.
 2. Lista istniejących profili pokazuje nazwę i zapisane saldo. Przy pustej bazie pojawia się komunikat, a fokus trafia do pola nowej nazwy.
 3. Wpisz nową nazwę i wybierz **Utwórz profil** lub naciśnij **Enter** w polu nazwy. Oczekiwane: menu gracza i saldo z istniejącego repozytorium (nowy profil domyślnie 1000$).
 4. W menu wybierz **Zmień profil**, wpisz tę samą nazwę i spróbuj utworzyć profil ponownie. Oczekiwane: czytelny komunikat o duplikacie, brak drugiego wpisu, zachowana nazwa i fokus w polu.
@@ -63,6 +63,9 @@ Zmiana profilu i jego utworzenie pozostają blokowane przy aktywnych zakładach 
 5. Zatwierdź dwa identyczne zakłady CLASSIC. Usuń tylko jeden z koszyka: drugi pozostaje, a zwrot obejmuje jedną stawkę. Limit pięciu dotyczy wyłącznie stosu CHIPS; CLASSIC może zawierać więcej identycznych pozycji.
 
 ## Koszyk, nawigacja i klawiatura
+
+Zakłady o tym samym typie i wyborze są prezentowane w jednym wierszu z liczbą i sumą stawek. **Usuń/Delete/dwuklik usuwa jeden ostatni zakład z grupy**, nie całą grupę. Wynik rundy również grupuje powtórzenia i sumuje wyłącznie wartości otrzymane z silnika. Komunikat stanu gry jest wyświetlany jeden raz, w dolnym pasku okna.
+
 
 1. Zaznacz pozycję koszyka i wybierz usunięcie lub wykonaj dwuklik. **Delete/Backspace** usuwa zaznaczoną pozycję. Usunięcie pozycji CHIPS aktualizuje również właściwy stos na stole.
 2. Na stole używaj **strzałek** do zmiany aktywnego pola, **Enter/Spacji** do dodania żetonu lub wyboru pola CLASSIC, **Delete/Backspace** do usunięcia ostatniego żetonu CHIPS. Aktywne pole ma widoczne oznaczenie fokusu.

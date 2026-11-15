@@ -146,7 +146,8 @@ class GameView(QWidget):
         self.cart_title = QLabel("KOSZYK · 0")
         self.cart_title.setProperty("role", "section")
         self.remove_button = QPushButton("Usuń")
-        self.remove_button.setToolTip("Usuń zaznaczoną pozycję. W koszyku: Delete lub dwuklik.")
+        self.remove_button.setToolTip("Usuń jeden ostatni zakład wybranej grupy i zwróć jego stawkę. "
+                                     "W koszyku: Delete lub dwuklik.")
         cart_header.addWidget(self.cart_title, 1)
         cart_header.addWidget(self.remove_button)
         right.addLayout(cart_header)
@@ -194,6 +195,7 @@ class GameView(QWidget):
         self.message.setProperty("role", "hint")
         self.message.setWordWrap(True)
         self.message.setMinimumHeight(20)
+        self.message.hide()
         status_row.addWidget(self.message, 1)
         self.retry_button = QPushButton("Ponów zapis")
         self.retry_button.clicked.connect(controller.retry_save)
@@ -242,11 +244,17 @@ class GameView(QWidget):
                                     f"Wypłata: {result.total_payout}$\n"
                                     f"Bilans rundy: {result.net_profit:+d}$")
         self.result_bets.clear()
+        groups = {}
         for entry in result.bet_results:
-            bet = entry.bet
-            selection = f" {bet.selection}" if bet.selection is not None else ""
-            outcome = "WYGRANY" if entry.won else "PRZEGRANY"
-            text = f"{outcome} · {bet.bet_type.name}{selection}\nStawka {bet.amount}$ · wypłata {entry.payout}$"
+            key = (entry.bet.bet_type, entry.bet.selection, entry.won)
+            group = groups.setdefault(key, [0, 0, 0])
+            group[0] += 1
+            group[1] += entry.bet.amount
+            group[2] += entry.payout
+        for (kind, selection, won), (count, stake, payout) in groups.items():
+            label = kind.name + (f" {selection}" if selection is not None else "")
+            outcome = "WYGRANY" if won else "PRZEGRANY"
+            text = f"{outcome} · {label} · zakładów: {count}\nStawka {stake}$ · wypłata {payout}$"
             self.result_bets.addItem(text)
             self.result_bets.item(self.result_bets.count() - 1).setToolTip(text)
         self.next_button.setFocus()
