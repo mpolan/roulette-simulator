@@ -1,4 +1,4 @@
-# Obsidian Royale — ręczne sprawdzenie Etapu 6
+# Obsidian Royale — ręczne sprawdzenie Etapu 7
 
 ## Uruchomienie
 
@@ -28,7 +28,7 @@ Normalny start korzysta z istniejącej `data/roulette.db`. Utworzone ręcznie pr
 2. Przejdź do wyboru profilu, a następnie wybierz **Powrót do menu** albo naciśnij **Esc**. Oczekiwane: menu tego samego gracza, bez tworzenia nowej sesji.
 3. Użyj **Tab** i **Shift+Tab** do przejścia po dostępnych kontrolkach. Przycisk można zatwierdzić **Spacją** lub **Enter**; pola nazwy i lista mają własną obsługę Enter.
 4. Po zmianie rozmiaru sprawdź czytelność. W menu przy małej wysokości lub długiej nazwie dostępne jest przewijanie, aby przycisk wyjścia pozostał osiągalny.
-5. **Gra** otwiera stół obstawiania, a **Statystyki** — statystyki i kolekcję aktywnego profilu. **Ranking** otwiera leaderboard. **Sklep** i **Ustawienia** pozostają nieaktywne.
+5. **Gra** otwiera stół obstawiania, a **Statystyki** — statystyki i kolekcję aktywnego profilu. **Ranking** otwiera leaderboard. **Prestige Shop** otwiera sklep odznak. **Ustawienia** pozostają nieaktywne.
 6. Zamknij aplikację przyciskiem **Wyjdź** i, po ponownym uruchomieniu, systemowym przyciskiem zamknięcia. Profile powinny pozostać dostępne po starcie.
 
 ## Blokady i zakres weryfikacji
@@ -90,7 +90,7 @@ Historyczne kontrole Etapu 3, w tym próby natywnego Qt i ograniczenia diagnozy 
 3. Sprawdź nowy profil bez rund: zera, skuteczność 0.00% i czytelny komunikat. Pusta kolekcja ma własny komunikat. Zakupione odznaki pokazują symbole i nazwy; obok widoczne są liczba odznak i łączna wydana kwota.
 4. **Odśwież** ponownie pobiera gotowe dane z usług i repozytorium. **Tab/Shift+Tab** przechodzi między kontrolkami, **Enter/Spacja** uruchamia przyciski, **Esc** wraca do menu. Podczas odczytu akcje są chwilowo zablokowane. Po zmianie profilu nie mogą pozostać dane poprzedniego gracza.
 5. Przy błędzie odczytu pojawia się komunikat i możliwość ponownego odświeżenia. Poprzednie dane tego samego profilu pozostają do czasu udanego odczytu; test wymusza błąd na danych tymczasowych.
-6. Sprawdź czytelność przy 900 × 650 i 740 × 560; przewijaj zawartość w mniejszym oknie. Zakupy odznak w GUI należą do późniejszego etapu — tutaj wyświetlana jest tylko istniejąca kolekcja.
+6. Sprawdź czytelność przy 900 × 650 i 740 × 560; przewijaj zawartość w mniejszym oknie. Po zakupie w Prestige Shop wejdź ponownie w Statystyki i sprawdź kolekcję, wydaną kwotę oraz zapisane saldo.
 
 ## Ranking
 
@@ -101,10 +101,22 @@ Historyczne kontrole Etapu 3, w tym próby natywnego Qt i ograniczenia diagnozy 
 5. **Tab/Shift+Tab** przechodzi między kontrolkami. Kryterium wybieraj strzałkami lub z listy, przyciski uruchamiaj **Enter/Spacją**, tabelę przewijaj myszą lub klawiaturą. **Powrót do menu/Esc** zachowuje tę samą sesję. Zmień profil i wejdź ponownie: wyróżnienie i pozycja mają odpowiadać nowemu graczowi.
 6. Sprawdź 900×650 i 740×560 oraz przewijanie przy wielu graczach. Przy zapisie, pending lub animacji obowiązują dotychczasowe blokady nawigacji. Zamykanie i anulowanie aktywnych zakładów działają jak wcześniej.
 
+## Prestige Shop
+
+1. W menu wybierz **Prestige Shop**. Sprawdź nazwę aktywnego gracza, dostępne saldo sesji i pięć kart z nazwą, symbolem, opisem oraz ceną z katalogu. Odznaki są wyłącznie kosmetyczne. Przy mniejszym oknie przewijaj karty w dół.
+2. Mając wystarczające środki, wybierz **Kup**. Oczekiwane: jeden zakup, komunikat powodzenia, karta **POSIADANA** i saldo zmienione przez usługę. Szybkie powtarzanie kliknięć nie może naliczyć kilku zakupów. Podczas operacji zakup, odświeżanie, nawigacja i zamknięcie są chwilowo zablokowane.
+3. Posiadanej odznaki nie można kupić ponownie. Dla zbyt drogiej karty widoczna jest brakująca kwota i nieaktywny przycisk **Brak środków**. Zachowane są identyfikatory i ceny 2500/5000/10000/25000/50000$.
+4. Wróć do gry, postaw żeton i otwórz sklep przez menu. Zakupy są zablokowane z wyjaśnieniem, a oglądanie, odświeżanie i powrót do menu pozostają dostępne. Usuń zakłady i ponownie wejdź do sklepu. Pending i animacja nadal blokują zakupy/nawigację; najpierw ponów zapis w grze lub poczekaj na koło.
+5. **Odśwież** pobiera katalog i kolekcję. Przy błędzie odczytu lub zakupu komunikat prosi o odświeżenie; do udanego odczytu zakupy pozostają zablokowane. Transakcja nie jest automatycznie ponawiana. Błędy i blokady testy wymuszają na tymczasowej bazie, bez zmiany danych użytkownika.
+6. Wybierz **Powrót do menu** lub **Esc**, otwórz **Statystyki**, następnie **Ranking → Kolekcjonerzy**. Zakupiona odznaka i zaktualizowane saldo powinny być widoczne w obu ekranach. Zmień profil i sprawdź, czy sklep pokazuje nowego gracza oraz jego kolekcję.
+7. **Tab/Shift+Tab** przechodzi po dostępnych przyciskach, **Enter/Spacja** uruchamia zakup/odświeżenie/powrót, **Esc** wraca do menu. Sprawdź 900×650 i 740×560, w tym dojście klawiaturą do niższych kart. Zamknięcie z aktywnymi zakładami zachowuje dotychczasowy dialog anulowania.
+
 ## Zrzuty kontrolne
 
-Etap 6: [ranking, 900 × 650](images/gui-stage6-leaderboard-900x650.png), natywny backend Qt Windows, wyłącznie demonstracyjne profile/rundy/zakupy na tymczasowej bazie. Obejrzano także 740 × 560.
+Etap 7: [Prestige Shop, 900 × 650](images/gui-stage7-shop-900x650.png), natywny backend Qt Windows, demonstracyjny zakup na tymczasowej bazie. Sprawdzono też przewijany układ 740 × 560 oraz odznakę w statystykach i rankingu.
 
+
+Etap 6: [ranking, 900 × 650](images/gui-stage6-leaderboard-900x650.png), natywny backend Qt Windows, wyłącznie demonstracyjne profile/rundy/zakupy na tymczasowej bazie. Obejrzano także 740 × 560.
 
 Etap 5: [statystyki i odznaki, 900 × 650](images/gui-stage5-statistics-900x650.png), natywny backend Qt Windows, profil demonstracyjny na tymczasowej bazie. Kontrola obejmowała też rozmiar 740 × 560; mniejszy widok ma przewijanie.
 
@@ -120,7 +132,7 @@ Zrzuty wykonano przez QWidget.grab() z natywnego backendu Qt Windows, na profilu
 ## Testy automatyczne
 
 ```powershell
-.\venv\Scripts\python.exe -X faulthandler -m pytest -q tests/gui/test_leaderboard.py tests/test_import_boundaries.py
+.\venv\Scripts\python.exe -X faulthandler -m pytest -q tests/gui/test_shop.py tests/test_import_boundaries.py
 ```
 
 Testy przełączają ścieżkę SQLite na pliki tymczasowe; nie korzystają z roboczej bazy graczy.

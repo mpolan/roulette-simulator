@@ -43,6 +43,10 @@ class _Worker(QObject):
                           self.shop.get_owned_badges(argument), self.shop.get_total_spent(argument))
             elif action == "leaderboard":
                 result = self.leaderboard.get_leaderboard(argument)
+            elif action == "shop":
+                result = (self.shop.get_catalog(), self.shop.get_owned_badges(argument))
+            elif action == "buy":
+                result = self.shop.buy_badge(*argument)
             else:
                 result = self.session_factory(argument)
             self.finished.emit(action, result, None, created)
@@ -61,6 +65,9 @@ class ApplicationController(QObject):
     statistics_error = Signal(str)
     leaderboard_changed = Signal(object)
     leaderboard_error = Signal(str)
+    shop_changed = Signal(object)
+    shop_error = Signal(str)
+    purchase_finished = Signal(object, object)
     _request = Signal(str, object)
     _stop = Signal()
 
@@ -105,7 +112,7 @@ class ApplicationController(QObject):
         return ""
 
     def _submit(self, action, value=None):
-        if self._closing or self.busy or (action not in ("load", "spin", "retry", "statistics", "leaderboard") and self.blocked()):
+        if self._closing or self.busy or (action not in ("load", "spin", "retry", "statistics", "leaderboard", "shop") and self.blocked()):
             return False
         self.busy = True
         self.busy_changed.emit(True)
@@ -140,6 +147,16 @@ class ApplicationController(QObject):
             return False
         return self._submit("leaderboard", sort_by)
 
+    def load_shop(self):
+        if self.session is None or self.navigation_blocked():
+            return False
+        return self._submit("shop", self.session.player_id)
+
+    def buy_badge(self, badge_id):
+        if self.session is None or self.blocked():
+            return False
+        return self._submit("buy", (self.session, badge_id))
+
     def submit_round(self, retry=False):
         if self._closing or self.busy or self.animating or self.session is None:
             return False
@@ -159,6 +176,15 @@ class ApplicationController(QObject):
             self.busy_changed.emit(False)
             return
         self.busy_changed.emit(False)
+        if action == "buy":
+            self.purchase_finished.emit(result, exc)
+            return
+        if action == "shop":
+            if exc is not None:
+                self.shop_error.emit(f"Nie można odczytać sklepu i kolekcji: {exc}. Spróbuj odświeżyć.")
+            else:
+                self.shop_changed.emit(result)
+            return
         if action == "leaderboard":
             if exc is not None:
                 self.leaderboard_error.emit(f"Nie można odczytać rankingu: {exc}. Spróbuj odświeżyć.")

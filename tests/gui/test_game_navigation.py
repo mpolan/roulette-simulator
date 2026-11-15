@@ -118,6 +118,6 @@ def test_switch_profile_reuses_view_and_replaces_session(game_window, wait_until
     wait_until(lambda: window.controller.session is not old_session)
     window.show_game()
     assert window.game_view is view
-    assert window.stack.count() == 5
+    assert window.stack.count() == 6
     assert window.game_controller.session is window.controller.session
     assert "1234" in view.balance_label.text()

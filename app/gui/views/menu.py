@@ -6,6 +6,7 @@ class MenuView(QWidget):
     game_requested = Signal()
     statistics_requested = Signal()
     leaderboard_requested = Signal()
+    shop_requested = Signal()
     change_profile_requested = Signal()
     exit_requested = Signal()
 
@@ -55,7 +56,11 @@ class MenuView(QWidget):
         self.leaderboard_button.setObjectName("leaderboardButton")
         self.leaderboard_button.clicked.connect(self.leaderboard_requested)
         content.addWidget(self.leaderboard_button)
-        for text in ("Sklep", "Ustawienia"):
+        self.shop_button = QPushButton("Prestige Shop")
+        self.shop_button.setObjectName("shopButton")
+        self.shop_button.clicked.connect(self.shop_requested)
+        content.addWidget(self.shop_button)
+        for text in ("Ustawienia",):
             button = QPushButton(text)
             button.setEnabled(False)
             button.setToolTip("Niedostępne w tej wersji")

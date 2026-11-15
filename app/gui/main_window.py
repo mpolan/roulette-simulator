@@ -9,6 +9,7 @@ from gui.views.profiles import ProfilesView
 from gui.views.menu import MenuView
 from gui.views.statistics import StatisticsView
 from gui.views.leaderboard import LeaderboardView
+from gui.views.shop import ShopView
 
 
 class MainWindow(QMainWindow):
@@ -24,6 +25,7 @@ class MainWindow(QMainWindow):
         self.menu_view = MenuView()
         self.statistics_view = StatisticsView()
         self.leaderboard = LeaderboardView()
+        self.shop_view = ShopView()
         self.game_controller = GameController(self.controller, self)
         self.game_view = GameView(self.game_controller)
         self.stack.addWidget(self.profiles_view)
@@ -31,6 +33,7 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.game_view)
         self.stack.addWidget(self.statistics_view)
         self.stack.addWidget(self.leaderboard)
+        self.stack.addWidget(self.shop_view)
         self._started = False
         self._shutdown_complete = False
         self._close_dialog = None
@@ -52,6 +55,10 @@ class MainWindow(QMainWindow):
         self.menu_view.leaderboard_requested.connect(self.show_leaderboard)
         self.leaderboard.back_requested.connect(self.show_menu)
         self.leaderboard.refresh_requested.connect(self._refresh_leaderboard)
+        self.menu_view.shop_requested.connect(self.show_shop)
+        self.shop_view.back_requested.connect(self.show_menu)
+        self.shop_view.refresh_requested.connect(self.refresh_shop)
+        self.shop_view.buy_requested.connect(self.buy_badge)
         self.game_view.back_requested.connect(self.show_menu)
         self.menu_view.exit_requested.connect(self.close)
         self.controller.profiles_changed.connect(self.profiles_view.set_profiles)
@@ -60,6 +67,9 @@ class MainWindow(QMainWindow):
         self.controller.statistics_error.connect(self._statistics_error)
         self.controller.leaderboard_changed.connect(self._leaderboard_changed)
         self.controller.leaderboard_error.connect(self._leaderboard_error)
+        self.controller.shop_changed.connect(self._shop_changed)
+        self.controller.shop_error.connect(self._shop_error)
+        self.controller.purchase_finished.connect(self._purchase_finished)
         self.game_controller.state_changed.connect(self._game_changed)
         self.game_controller.error.connect(self.statusBar().showMessage)
         self.controller.busy_changed.connect(self._update_state)
@@ -91,6 +101,7 @@ class MainWindow(QMainWindow):
         self.game_controller.set_session(session)
         self.statistics_view.reset()
         self.leaderboard.reset()
+        self.shop_view.reset()
         self.show_menu()
         self._update_state()
 
@@ -129,6 +140,60 @@ class MainWindow(QMainWindow):
             self.controller.session is not None and not self.controller.navigation_blocked()
         )
         self.leaderboard.set_busy(self.controller.navigation_blocked())
+        self.menu_view.shop_button.setEnabled(
+            self.controller.session is not None and not self.controller.navigation_blocked()
+        )
+        self.shop_view.set_state(self.controller.navigation_blocked(), blocked,
+                                 self.controller.blocked_reason())
+
+    def show_shop(self):
+        if self.controller.session is None or self.controller.navigation_blocked():
+            self.statusBar().showMessage(self.controller.blocked_reason())
+            return
+        self.stack.setCurrentWidget(self.shop_view)
+        self._update_shop_player()
+        self.refresh_shop()
+
+    def refresh_shop(self):
+        self.controller.load_shop()
+
+    def buy_badge(self, badge_id):
+        if not self.controller.buy_badge(badge_id):
+            self.shop_view.show_message(self.controller.blocked_reason(), error=True)
+            self._update_state()
+
+    def _update_shop_player(self):
+        player = self.controller.session.game.player
+        self.shop_view.set_player(player.name, player.balance)
+
+    def _shop_changed(self, data):
+        self._update_shop_player()
+        self.shop_view.set_data(*data)
+        for card in self.shop_view.cards.values():
+            card.buy_button.installEventFilter(self)
+        self.shop_view.refresh_button.setFocus()
+
+    def _shop_error(self, message):
+        self.shop_view.invalidate_collection()
+        self.shop_view.show_message(message, error=True)
+        self.shop_view.refresh_button.setFocus()
+
+    def _purchase_finished(self, purchase, exc):
+        self._update_shop_player()
+        if exc is not None:
+            messages = {
+                "You cannot buy this badge": "Nie masz wystarczających środków.",
+                "Player already owns this badge": "Ta odznaka jest już w Twojej kolekcji.",
+                "Badge does not exist": "Wybrana odznaka nie jest dostępna.",
+            }
+            self.shop_view.invalidate_collection()
+            self.shop_view.show_message(
+                f"Nie udało się kupić odznaki: {messages.get(str(exc), str(exc))} Odśwież sklep przed kolejną próbą.",
+                error=True,
+            )
+        else:
+            self.shop_view.mark_purchased(purchase)
+        self.shop_view.refresh_button.setFocus()
 
     def show_leaderboard(self):
         if self.controller.session is None or self.controller.navigation_blocked():
