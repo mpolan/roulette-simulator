@@ -3,21 +3,22 @@
 ## Stan i bramka akceptacji
 
 - Aktualizacja: 2026-11-15.
-- Aktualnie zaakceptowany ukończony etap: **Etap 0**, przez wiadomość `ZATWIERDZAM ETAP 0 — PRZEJDŹ DO ETAPU 1`.
-- Etap 1: **ukończony; oczekiwanie na akceptację wyniku**, po pozytywnym teście natywnej delegacji wymaganym przez użytkownika. Etapy 2–9 nierozpoczęte.
+- Aktualnie zaakceptowany ukończony etap: **Etap 1**, przez wiadomość `ZATWIERDZAM ETAP 1 — PRZEJDŹ DO ETAPU 2`.
+- Etap 2: **ukończony; oczekiwanie na akceptację wyniku**. Etapy 3–9 nierozpoczęte.
 - Etap 0: ukończony i zaakceptowany.
 - Gałąź: `codex`; początkowy commit: `4ba0069f25eb652917a039f76c634fdd1d8d4072` (`Roulette MVP 3.0`). Początkowy status czysty, brak wcześniejszych zmian użytkownika.
 - Ostatni commit konfiguracji: `7c5bacfcebe0bf0af4fbbcc4d40d39e2a1e9de38` — `chore(gui): configure project agents` (13 plików: AGENTS i konfiguracja ról).
-- Ostatni commit poprzedniego etapu: `954cc707e866067446fe8bf1084da673c8a31657` — dokumentacja audytu.
+- Ostatni commit poprzedniego etapu: `bd8fb72a8c956f433b1110d3f1fc6b22303a70d0` — dokumentacja i wyniki Etapu 1.
 - Ostatni commit implementacji Etapu 1: `69a187fd4395664903697f3ba23a7d13a008a1c3` — `feat(gui): bootstrap Qt and add baseline regressions`.
+- Ostatni commit implementacji Etapu 2: `99f2963cd7f82fbd8746b0bf3d94c578b473f110` — `feat(gui): add main window and player profiles`.
 - Ostatni commit bieżącej dokumentacji: do ustalenia przez `git log -1 --format="%H %s" -- docs/GUI_PROGRESS.md`; SHA zostanie podany w raporcie czatu. Własnego SHA nie wpisujemy do treści tego samego commita.
-- Kontynuacja do Etapu 2 wyłącznie po: `ZATWIERDZAM ETAP 1 — PRZEJDŹ DO ETAPU 2`.
+- Kontynuacja do Etapu 3 wyłącznie po: `ZATWIERDZAM ETAP 2 — PRZEJDŹ DO ETAPU 3`.
 
 | Etap | Stan | Akceptacja |
 | --- | --- | --- |
 | 0 — Bootstrap i audyt | Ukończony | Udzielona |
-| 1 — Testy bazowe i architektura | Ukończony | Oczekiwana po raporcie |
-| 2 — Główne okno i profile | Nierozpoczęty | Brak |
+| 1 — Testy bazowe i architektura | Ukończony | Udzielona |
+| 2 — Główne okno i profile | Ukończony | Oczekiwana po raporcie |
 | 3 — Stół i obstawianie | Nierozpoczęty | Brak |
 | 4 — Koło i animacja | Nierozpoczęty | Brak |
 | 5 — Statystyki | Nierozpoczęty | Brak |
@@ -111,6 +112,38 @@ Po starcie GUI oczekiwane jest proste okno z nazwą Obsidian Royale, możliwe do
 
 Dotychczasowy start TUI: `.\venv\Scripts\python.exe app/app.py`. Na świeżym środowisku najpierw zainstaluj również `requirements.txt`; nie jest zastępowany plikiem GUI. Nie uruchamiaj równoczesnej gry TUI i GUI tym samym profilem.
 
+## Etap 2 — główne okno, menu i profile
+
+### Wykonane zadania i agenci
+
+- Zastano czyste drzewo robocze na `codex`, HEAD `bd8fb72a8c956f433b1110d3f1fc6b22303a70d0`. Nie zmieniano gałęzi ani upstreamu.
+- Wykonawca: natywna rola `gui_shell` / zadanie `shell_stage2`, **gpt-6.1-terra / medium** — okno, kontroler, widoki i testy profili.
+- Niezależny QA: natywna rola `qa_reviewer` / zadanie `qa_stage2`, **gpt-6-astra / medium**. Nie zwiększano limitu 2 subagentów; nie stosowano zamienników modeli.
+- Koordynator: integracja startu, wspólny motyw na palecie TUI, rozszerzone testy, poprawki po QA, kontrola renderów, dokumentacja i commity.
+- MainWindow z trwałymi widokami profili i menu w QStackedWidget. Widok profili: lista z saldem, tworzenie, wybór, odświeżenie, powrót i wyjście. Menu: aktywny gracz, saldo, zmiana profilu i wyjście; przyszłe funkcje nieaktywne.
+- ApplicationController używa PlayerRepository i istniejącej fabryki GameSession. Odczyt/tworzenie/otwieranie w jednym workerze QObject/QThread, bez SQL ani alternatywnej logiki danych w GUI. Jedna operacja naraz, polskie błędy i zachowanie sesji po niepowodzeniu.
+- Walidacja nazwy odpowiada TUI, unikalność nadal zapewnia SQLite. Profil utworzony przed błędem fabryki pojawia się na liście do ponownego wyboru, nie jest tworzony drugi raz.
+- Centralne blokady zmiany/utworzenia profilu i zamknięcia przy busy/zakładach/pending/animacji. Powrót do menu przy aktywnych zakładach zachowuje sesję; pending/animacja/busy/zamykanie blokują powrót.
+- Klawiatura i mysz: Tab/Shift+Tab, Enter, Spacja, Esc, widoczny focus; po błędzie duplikatu nazwa i fokus pozostają w polu. Nazwy graczy wyświetlane jako PlainText. Małe okno i długie nazwy obsługuje przewijane menu.
+- Instrukcja ręczna: `docs/GUI_MANUAL_CHECK.md`. Nie wdrażano stołu, koła, zakładów w GUI, statystyk, sklepu ani rankingu.
+
+### Weryfikacja i QA
+
+- **Końcowa pełna regresja: 591 passed in 13.89s**, polecenie `.\venv\Scripts\python.exe -m pytest -q`. Obejmuje ostatni test Enter na przyciskach. Poprzedni przebieg po poprawkach blokad: 590 passed in 13.38s.
+- Podzbiór Qt/profili/importów po poprawce blokad i domknięcia: **25 passed in 10.39s**. Wcześniejszy pełny przebieg przed poprawkami QA: 586 passed in 11.09s.
+- Nowe testy sprawdzają tworzenie i duplikaty, listę/wybór/przełączanie/saldo, stabilne widoki i sesję, busy/double request, responsywność Qt podczas oczekiwania repozytorium, błędy listy/fabryki, retry odczytu, aktywne zakłady i prawdziwy pending GameSession, closeEvent oraz powrót do menu. QTest wysyła zdarzenia myszy i klawiatury; SQLite jest tymczasowe także w procesach potomnych.
+- **QA P2:** show_menu i przycisk powrotu początkowo pomijały pending/animację. Poprawiono centralną blokadę i dodano regresje, zachowując dozwolony powrót z samymi zakładami. Końcowy QA nie wskazuje pozostałych konkretnych P1/P2.
+- Końcowy przegląd obsługi Enter na aktywnych przyciskach: bez uwag blokujących; QA wykonał dodatkowy test klawiatury (**1 passed in 1.25s**). Filtr dotyczy tylko przycisków, nie zmienia Enter w polu nazwy ani liście.
+- **Ograniczenie runtime:** w jednym początkowym przebiegu QA wystąpił natywny Windows access violation na granicy testów zamykania okien; proces przerwano. Kolejne 21 testów przeszło. Dodano zabezpieczenie czasu życia: shutdown_finished dopiero po nieblokującym wait(0), a przekazywany wyjątek nie zachowuje tracebacku workera. Po zmianie QA zaliczył 5 testów blokad/fokusu/zamknięcia (2.79 s) i podejrzaną parę w trzech świeżych procesach (**3 × 2 passed**, timeout 30 s, bez stderr). Pełna regresja także przeszła. Pierwotna przyczyna awarii nie została udowodniona; brak powtórzenia nie stanowi gwarancji jej definitywnego usunięcia. Śledzić przy dalszych testach natywnego Windows i Etapie 8.
+- Obejrzano rendery offscreen profili i menu przy 900 × 650 oraz menu przy 740 × 560. Fonty systemowe Segoe UI zarejestrowano jawnie w renderze/testach, ponieważ backend offscreen sandboxa nie widział żadnych rodzin fontów. Nie jest to zmiana produktu ani zastępstwo ręcznej kontroli natywnego Windows/DPI.
+- `pip check`: **No broken requirements found**. Nie zmieniano zależności ani konfiguracji bezpieczeństwa.
+- Kontrola zakresu diffu: zamrożone `app/domain/`, `app/services/`, `app/persistence/`, stare TUI i `requirements.txt` bez zmian względem początku etapu. Robocza `data/roulette.db` ma identyczny hash SHA-256 jak przed pracą; żadna baza nie jest commitowana.
+- `git diff --cached --check` i przegląd staged diffu: OK po usunięciu nadmiarowych pustych linii końcowych. Commit implementacji zawiera wyłącznie 10 wskazanych plików GUI/testów; dokumentacja stanowi osobny commit. Nie budowano EXE i nie rozpoczynano Etapu 3.
+
+### Wznowienie
+
+Aktualny start prowadzi do ekranu profili, nie do przejściowego okna Etapu 1. Uruchomienie i lista ręcznych prób są w `GUI_MANUAL_CHECK.md`. Następny etap wymaga osobnej akceptacji. Ograniczenie pojedynczej natywnej awarii Qt pozostaje jawnie zapisane powyżej do dalszej obserwacji.
+
 ## Kluczowe decyzje i ograniczenia
 
 - `Game` jest jedynym źródłem zakładów, salda sesji i limitów; `RoundResult` źródłem rozliczenia i wyniku koła.
@@ -129,9 +162,9 @@ Dotychczasowy start TUI: `.\venv\Scripts\python.exe app/app.py`. Na świeżym ś
 1. Otwórz ten sam projekt na `codex`; przeczytaj AGENTS, plan, dziennik i sprawdź status oraz HEAD. Nie klonuj repozytorium.
 2. Przy nowej sesji sprawdź dostępność nazwanych ról w natywnym narzędziu delegacji. W razie wątpliwości wykonaj krótki audyt do odczytu przez `architecture_auditor`; nie diagnozuj bieżącej sesji wyłącznie przez osobny CLI.
 3. Nie zmieniaj zaufania projektu, globalnych uprawnień ani sandboxa. Zachowaj model koordynatora GPT-6.1 Sol / High i limit 2 subagentów.
-4. Po ukończeniu Etapu 1 dalsza praca wymaga dokładnie `ZATWIERDZAM ETAP 1 — PRZEJDŹ DO ETAPU 2`. Sama działająca delegacja nie zatwierdza kolejnych etapów.
+4. Po ukończeniu Etapu 2 dalsza praca wymaga dokładnie `ZATWIERDZAM ETAP 2 — PRZEJDŹ DO ETAPU 3`. Sama działająca delegacja nie zatwierdza kolejnych etapów.
 5. Wykonać wyłącznie następny zaakceptowany etap, testy i kontrolę diffu, uzupełnić dziennik, commit i zatrzymać się.
 
 ## Następny etap — jeszcze nieautoryzowany
 
-Etap 2: właściwe główne okno PySide6, nawigacja, tworzenie i wybieranie profili, menu oraz integracja z istniejącymi repozytoriami i GameSession. Do wykonania dopiero po akceptacji Etapu 1.
+Etap 3: graficzny stół europejski, CHIPS/CLASSIC, aktualne typy zakładów, stosy żetonów, usuwanie, koszyk, saldo i blokady — wyłącznie przez obecne API Game. Bez implementacji animacji koła należącej do Etapu 4. Do wykonania dopiero po akceptacji Etapu 2.
