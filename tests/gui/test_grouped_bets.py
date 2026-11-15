@@ -78,6 +78,8 @@ def test_spin_result_groups_ready_bet_results_without_changing_totals(view, monk
     assert len(original_results) == 4
     assert result.bet_results is original_results
     assert view.result_bets.count() == 2
+    assert view.result_bets.item(0).foreground().color().name() == "#72f5ba"
+    assert view.result_bets.item(1).foreground().color().name() == "#ff8e9b"
     assert view.result_bets.item(0).text() == "WYGRANY · DOZEN 1 · zakładów: 2\nStawka 35$ · wypłata 105$"
     assert view.result_bets.item(1).text() == "PRZEGRANY · BLACK · zakładów: 2\nStawka 15$ · wypłata 0$"
     assert (result.total_stake, result.total_payout, result.net_profit) == (50, 105, 55)

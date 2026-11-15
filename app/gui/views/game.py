@@ -1,7 +1,7 @@
 """Trwały widok stołu, koła i wyniku rundy."""
 
 from PySide6.QtCore import QEvent, QSignalBlocker, Qt, Signal
-from PySide6.QtGui import QKeySequence, QShortcut
+from PySide6.QtGui import QColor, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QComboBox, QFormLayout, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton,
     QListWidget, QSizePolicy, QStackedWidget, QVBoxLayout, QWidget,
@@ -256,7 +256,9 @@ class GameView(QWidget):
             outcome = "WYGRANY" if won else "PRZEGRANY"
             text = f"{outcome} · {label} · zakładów: {count}\nStawka {stake}$ · wypłata {payout}$"
             self.result_bets.addItem(text)
-            self.result_bets.item(self.result_bets.count() - 1).setToolTip(text)
+            item = self.result_bets.item(self.result_bets.count() - 1)
+            item.setToolTip(text)
+            item.setForeground(QColor("#72F5BA" if won else "#FF8E9B"))
         self.next_button.setFocus()
 
     def eventFilter(self, watched, event):

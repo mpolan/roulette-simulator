@@ -273,3 +273,7 @@ Etap 9: końcowa regresja, kontrola zgodności GUI/TUI i danych, dokumentacja u�
 - Koszyk pokazuje liczbę i sumę stawek; Usuń/Delete/dwuklik usuwa jeden ostatni oryginalny Bet grupy. Trwałe wiersze i tożsamość zachowane. Wynik sumuje wyłącznie gotowe kwoty BetResult, podsumowanie pozostaje z RoundResult. Bez zmian silnika i zasad rozliczenia.
 - Kontrole: wykonawca 5 passed in 0.42s (2 nowe i 3 istniejące); koordynator w osobnych procesach 1 passed in 0.49s (rozmiar/jeden komunikat), 2 passed in 1.27s (pending i potwierdzenie zwrotu), 1 passed in 1.34s (spin/zapis/animacja). Wcześniejszy wspólny przebieg zatrzymał się po czterech kropkach przy kończeniu i został przerwany; izolowane przebiegi zakończyły się poprawnie. Bez natywnej awarii i bez deklarowania definitywnego rozwiązania historycznego problemu sprzątania Qt.
 - Diff/check i przegląd zmian; zamrożone katalogi i TUI bez zmian. Robocza baza zachowała hash z początku korekty: 6CBCE76A7284635B59005A3EEFADC93D2FFBDDAC5DBA6B8F3EF6FCBB2594244C. Testy wyłącznie na tymczasowych bazach. SHA w raporcie czatu. Etap 9 nadal wymaga zgody.
+
+### Kolory wyniku — 2026-11-16
+
+Na prośbę użytkownika grupy wygranych zakładów są zielone (#72F5BA), przegranych czerwone (#FF8E9B), zgodnie z paletą GUI. Etykiety tekstowe zachowano. Wyłącznie prezentacja w views/game.py; bez zmian silnika/TUI. Koordynator wykonał drobną poprawkę bez dodatkowej delegacji. Celowane testy grupowania z kontrolą kolorów: 2 passed in 0.23s. Przegląd diff/check bez uwag. Etap 9 nierozpoczęty.
