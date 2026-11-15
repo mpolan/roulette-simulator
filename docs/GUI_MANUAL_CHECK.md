@@ -1,4 +1,4 @@
-# Obsidian Royale — ręczne sprawdzenie Etapu 3
+# Obsidian Royale — ręczne sprawdzenie Etapu 4
 
 ## Uruchomienie
 
@@ -43,7 +43,7 @@ Zmiana profilu i jego utworzenie pozostają blokowane przy aktywnych zakładach 
 2. Postaw żeton i dodaj identyczny zakład CLASSIC. Użyj X lub skrótu zamykania. Dialog oferuje **Anuluj zakłady i zamknij** oraz **Wróć do gry**. Samo pokazanie dialogu nie zmienia salda ani koszyka; okno nie przyjmuje innych interakcji do podjęcia decyzji.
 3. Wybierz **Wróć do gry**, naciśnij **Esc** albo zamknij sam dialog. **Enter** na domyślnym przycisku także wraca do gry. Oczekiwane: ta sama sesja, wszystkie zakłady i saldo bez zmian, widoczny stół.
 4. Ponów zamknięcie i wybierz **Anuluj zakłady i zamknij**. Oczekiwane: każda oryginalna pozycja jest usunięta przez `Game.remove_bet()`, wszystkie stawki zwrócone w sesji, stosy puste, aplikacja zamknięta. Nie następuje losowanie ani zapis rundy. Anulowanie nie wymaga aktualizacji bazy, ponieważ samo obstawianie nie zapisywało salda w SQLite.
-5. Przy `has_pending_round` nie ma opcji anulowania ani zamknięcia: pasek stanu informuje **Najpierw ponów zapis oczekującej rundy**. Busy i animacja także zachowują dotychczasowe blokady. Stan pending sprawdzają testy; GUI Etapu 3 nadal nie udostępnia spin/retry.
+5. Przy `has_pending_round` nie ma opcji anulowania ani zamknięcia: pasek stanu informuje **Najpierw ponów zapis oczekującej rundy**. Użyj **Ponów zapis** w widoku gry. Busy i animacja także zachowują dotychczasowe blokady.
 
 ## Stół i CHIPS
 
@@ -70,11 +70,22 @@ Zmiana profilu i jego utworzenie pozostają blokowane przy aktywnych zakładach 
 4. Naciśnij **Esc** albo **Powrót do menu** z aktywnymi zakładami. W menu saldo odpowiada sesji, zmiana profilu jest zablokowana, a **Wyjdź** otwiera potwierdzenie anulowania zakładów. Ponowne wejście w **Gra** pokazuje te same zakłady, tryb i nominał.
 5. Usuń wszystkie zakłady. Saldo wraca do wartości sprzed obstawiania, a zmiana profilu i zamknięcie stają się dostępne. Samo obstawianie nie zapisuje rund w SQLite.
 6. Sprawdź okno przy **900 × 650**, **1280 × 800** i **740 × 560**. Stół dopasowuje skalę do miejsca, a koszyk przewija własne pozycje. Cały widok gry nie ma przewijania. Wszystkie pola mają pozostać osiągalne; etykiety liczb i nominały nie powinny się zlewać.
-7. **SPIN pozostaje nieaktywny w Etapie 3**, również z zakładami. Nie uruchamia RNG, zapisu ani rozliczenia. Koło, animacja i spin/save/retry należą do Etapu 4.
+7. **SPIN** jest aktywny przy zaakceptowanych zakładach i braku blokad. Pusty koszyk nie pozwala rozpocząć rundy.
 
-Zestaw pytest pracuje offscreen, z symulowanymi zdarzeniami myszy i klawiatury. Dodatkowy smoke koordynatora użył natywnego backendu Qt **windows**, rzeczywistych widgetów i zdarzeń QTest: 12 kolejnych cykli otwarcia okna, wyboru profilu, obstawiania/usuwania, menu i zamknięcia; po poprawce geometrii żetonów powtórzono 12 cykli. Wszystkie dane były tymczasowe. Historyczna natywna awaria Etapu 2 nie powtórzyła się. Nie dowodzi to usunięcia jej pierwotnej przyczyny i nie zastępuje sprawdzenia różnych ustawień Windows/DPI ani całej rozgrywki.
+## Koło, wynik i kolejna runda
+
+1. Postaw kilka zakładów i naciśnij **SPIN** lub **Ctrl+Spacja**. Operacja rozlicza i zapisuje rundę przez istniejącą sesję, następnie pokazuje obracające się koło. Koło ma 37 pól w kolejności silnika, zielone zero i nieruchomy wskaźnik u góry.
+2. Obserwuj płynne zwalnianie. Podczas zapisu i animacji zakłady, kolejny SPIN, nawigacja oraz zamknięcie są zablokowane; okno nadal odświeża się i można zmieniać jego rozmiar.
+3. Po zatrzymaniu numer pod wskaźnikiem odpowiada wynikowi w panelu. Sprawdź numer i kolor, wygrane/przegrane pozycje, stawkę, wypłatę oraz bilans netto. **Wypłata obejmuje zwrócone stawki wygranych zakładów**, bilans netto jest osobną wartością z silnika.
+4. Wybierz **Obstawiaj dalej**, postaw zakład i rozpocznij następną rundę. **Ostatni wynik** pozwala wrócić do poprzedniego wyniku; powrót do menu i gry zachowuje sesję. Zmiana profilu czyści wynik prezentacji.
+5. W razie błędu zapisu użyj **Ponów zapis** lub **Ctrl+R**. Obstawianie i wyjście pozostają zablokowane do udanego zapisu; ponowienie zapisuje ten sam wynik bez nowego losowania. Animacja rozpoczyna się dopiero po powodzeniu zapisu. Celowany test automatyczny wymusza ten błąd na tymczasowej bazie; nie ma przycisku diagnostycznego w aplikacji.
+6. Sprawdź koło i wynik przy 900 × 650 oraz 740 × 560. Lista wyników zakładów ma własne przewijanie. Zamykanie z aktywnymi zakładami nadal korzysta z opisanego wyżej potwierdzenia anulowania.
+
+Historyczne kontrole Etapu 3, w tym próby natywnego Qt i ograniczenia diagnozy jego awarii, opisuje `GUI_PROGRESS.md`. W Etapie 4 wykonano tylko celowane testy i jeden natywny smoke na tymczasowej bazie. Nie zastępują one kontroli wszystkich ustawień Windows/DPI ani pełnej regresji zaplanowanej na Etap 9.
 
 ## Zrzuty kontrolne
+
+Etap 4: [koło i wynik, 900 × 650](images/gui-stage4-result-900x650.png), natywny backend Qt Windows, przykładowa runda na tymczasowej bazie. Jeden smoke nowej rundy, bez serii stabilności i pełnego zestawu testów; awaria Qt nie wystąpiła. Historyczne ograniczenie diagnozy pozostaje w dzienniku.
 
 Zrzuty wykonano przez QWidget.grab() z natywnego backendu Qt Windows, na profilu demonstracyjnym w tymczasowej bazie, po poprawce geometrii żetonów. Nie zawierają danych użytkownika.
 
@@ -86,7 +97,7 @@ Zrzuty wykonano przez QWidget.grab() z natywnego backendu Qt Windows, na profilu
 ## Testy automatyczne
 
 ```powershell
-.\venv\Scripts\python.exe -m pytest -q
+.\venv\Scripts\python.exe -X faulthandler -m pytest -q tests/gui/test_wheel.py tests/gui/test_game_navigation.py tests/gui/test_close.py
 ```
 
 Testy przełączają ścieżkę SQLite na pliki tymczasowe; nie korzystają z roboczej bazy graczy.

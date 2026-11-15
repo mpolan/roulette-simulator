@@ -83,6 +83,10 @@ class MainWindow(QMainWindow):
     def _game_changed(self):
         if self.controller.session is not None:
             self.menu_view.set_session(self.controller.session)
+        message = self.game_controller.status_message
+        if not message and self.controller.navigation_blocked():
+            message = self.controller.blocked_reason()
+        self.statusBar().showMessage(message)
         self._update_state()
 
     def _update_state(self, *_):
@@ -106,7 +110,10 @@ class MainWindow(QMainWindow):
             return
         self.game_controller.refresh()
         self.stack.setCurrentWidget(self.game_view)
-        self.game_view.table.setFocus()
+        if self.game_view.table.isVisible():
+            self.game_view.table.setFocus()
+        else:
+            self.game_view.next_button.setFocus()
 
     def show_profiles(self):
         if self.controller.blocked():

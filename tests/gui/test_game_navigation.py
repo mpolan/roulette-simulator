@@ -1,7 +1,7 @@
-"""Stół w trwałym oknie: sesja, nawigacja, blokady i granica Etapu 4."""
+"""Stół w trwałym oknie: sesja, nawigacja i dostępność SPIN."""
 
 import pytest
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QCoreApplication, QEvent, Qt
 from PySide6.QtTest import QTest
 
 from domain.bet import Bet, BetType
@@ -30,6 +30,9 @@ def game_window(qapp, initialized_db, wait_until):
     wait_until(lambda: not window.controller.busy)
     window.close()
     wait_until(lambda: not window.isVisible())
+    window.deleteLater()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    qapp.processEvents()
 
 
 def test_table_menu_preserves_session_and_updates_balance(game_window):
@@ -62,23 +65,24 @@ def test_table_menu_preserves_session_and_updates_balance(game_window):
     assert "1000" in window.menu_view.balance_label.text()
 
 
-def test_spin_remains_inactive_without_rng_or_persistence(game_window, monkeypatch):
+def test_spin_requires_active_bets(game_window, monkeypatch):
     window = game_window
     session = window.controller.session
 
     def forbidden(*args):
-        pytest.fail("Etap 3 nie może losować ani zapisywać rundy")
+        pytest.fail("Pusty koszyk nie może uruchomić rundy")
 
     monkeypatch.setattr(session, "spin_and_save", forbidden)
     monkeypatch.setattr(session.game, "spin", forbidden)
     monkeypatch.setattr(session.game.wheel, "spin", forbidden)
     window.show_game()
-    bet = Bet(10, BetType.BLACK)
-    session.game.place_bet(bet)
-    window.game_controller.refresh()
     assert not window.game_view.spin_button.isEnabled()
     QTest.mouseClick(window.game_view.spin_button, Qt.MouseButton.LeftButton)
     QTest.keyClick(window.game_view.spin_button, Qt.Key.Key_Space)
+    bet = Bet(10, BetType.BLACK)
+    session.game.place_bet(bet)
+    window.game_controller.refresh()
+    assert window.game_view.spin_button.isEnabled()
     assert session.game.current_bets[0] is bet
     assert session.game.player.balance == 990
 

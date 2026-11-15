@@ -1,16 +1,17 @@
-"""Trwały widok stołu, selektora i koszyka Etapu 3."""
+"""Trwały widok stołu, koła i wyniku rundy."""
 
 from PySide6.QtCore import QEvent, QSignalBlocker, Qt, Signal
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QComboBox, QFormLayout, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton,
-    QSizePolicy, QStackedWidget, QVBoxLayout, QWidget,
+    QListWidget, QSizePolicy, QStackedWidget, QVBoxLayout, QWidget,
 )
 
 from domain.bet import BetType
 from gui.widgets.bet_cart import BetCart
 from gui.widgets.betting_table import BettingTable
 from gui.widgets.chip_picker import ChipPicker
+from gui.widgets.roulette_wheel import RouletteWheel
 
 
 class GameView(QWidget):
@@ -19,6 +20,7 @@ class GameView(QWidget):
     def __init__(self, controller, parent=None):
         super().__init__(parent)
         self.controller = controller
+        self._session = None
         self.setObjectName("gameView")
         self.setStyleSheet("QWidget#gameView { background: #080D14; } "
                            "QComboBox { background: #17232D; border: 1px solid #A58B58; "
@@ -41,11 +43,21 @@ class GameView(QWidget):
         self.balance_label.setProperty("role", "section")
         header.addWidget(self.back_button)
         header.addWidget(self.player_label, 1)
+        self.result_button = QPushButton("Ostatni wynik")
+        self.result_button.clicked.connect(self.show_result)
+        header.addWidget(self.result_button)
         header.addWidget(self.balance_label)
         layout.addLayout(header)
+        self.body = QStackedWidget()
+        self.betting_page = QWidget()
+        betting_layout = QVBoxLayout(self.betting_page)
+        betting_layout.setContentsMargins(0, 0, 0, 0)
+        betting_layout.setSpacing(7)
+        self.body.addWidget(self.betting_page)
+        layout.addWidget(self.body, 1)
         self.table = BettingTable()
         self.table.field_activated.connect(controller.activate_field)
-        layout.addWidget(self.table, 3)
+        betting_layout.addWidget(self.table, 3)
 
         dashboard = QHBoxLayout()
         dashboard.setSpacing(12)
@@ -146,23 +158,54 @@ class GameView(QWidget):
         self.stake_label = QLabel("Stawka: 0$")
         self.spin_button = QPushButton("SPIN")
         self.spin_button.setEnabled(False)
-        self.spin_button.setToolTip("Rozliczanie rundy i animowane koło będą dostępne w Etapie 4.")
+        self.spin_button.setToolTip("Rozpocznij rundę · Ctrl+Spacja")
+        self.spin_button.clicked.connect(controller.spin)
         footer.addWidget(self.stake_label, 1)
         footer.addWidget(self.spin_button)
         right.addLayout(footer)
         dashboard.addWidget(cart_panel, 1)
-        layout.addLayout(dashboard, 2)
-        self.message = QLabel("SPIN: dostępny od Etapu 4. Możesz obstawiać i usuwać zakłady.")
+        betting_layout.addLayout(dashboard, 2)
+        self.wheel_page = QWidget()
+        wheel_layout = QHBoxLayout(self.wheel_page)
+        wheel_layout.setContentsMargins(0, 0, 0, 0)
+        self.wheel = RouletteWheel()
+        wheel_layout.addWidget(self.wheel, 3)
+        result_panel = QFrame()
+        result_panel.setProperty("panel", True)
+        result_panel.setMinimumWidth(230)
+        result_layout = QVBoxLayout(result_panel)
+        self.result_title = QLabel("Koło w ruchu…")
+        self.result_title.setProperty("role", "section")
+        self.result_title.setWordWrap(True)
+        self.result_summary = QLabel()
+        self.result_summary.setWordWrap(True)
+        self.result_bets = QListWidget()
+        self.result_bets.setAccessibleName("Rozliczenie poszczególnych zakładów")
+        self.next_button = QPushButton("Obstawiaj dalej")
+        self.next_button.clicked.connect(self.show_betting)
+        for widget in (self.result_title, self.result_summary, self.result_bets, self.next_button):
+            result_layout.addWidget(widget, 1 if widget is self.result_bets else 0)
+        wheel_layout.addWidget(result_panel, 2)
+        self.body.addWidget(self.wheel_page)
+        status_row = QHBoxLayout()
+        self.message = QLabel()
         self.message.setTextFormat(Qt.TextFormat.PlainText)
         self.message.setProperty("role", "hint")
         self.message.setWordWrap(True)
         self.message.setMinimumHeight(20)
-        layout.addWidget(self.message)
+        status_row.addWidget(self.message, 1)
+        self.retry_button = QPushButton("Ponów zapis")
+        self.retry_button.clicked.connect(controller.retry_save)
+        self.retry_button.setToolTip("Zapisz tę samą rundę ponownie · Ctrl+R")
+        status_row.addWidget(self.retry_button)
+        layout.addLayout(status_row)
 
         self.shortcuts = []
         for sequence, callback in (("Escape", self.back_requested.emit),
                                    ("Alt+C", self._toggle_mode),
-                                   ("Ctrl+Return", controller.confirm_classic)):
+                                   ("Ctrl+Return", controller.confirm_classic),
+                                   ("Ctrl+Space", controller.spin),
+                                   ("Ctrl+R", controller.retry_save)):
             self._shortcut(sequence, callback)
         for index in range(5):
             self._shortcut(f"Alt+{index + 1}", lambda i=index: self._choose_chip_index(i))
@@ -170,7 +213,42 @@ class GameView(QWidget):
             button.installEventFilter(self)
         controller.state_changed.connect(self.refresh)
         controller.error.connect(self.show_error)
+        controller.animation_requested.connect(self.animate_result)
+        controller.round_revealed.connect(self.reveal_result)
+        self.wheel.animation_finished.connect(controller.animation_finished)
         self.refresh()
+
+    def show_betting(self):
+        if not self.controller.betting_locked:
+            self.body.setCurrentWidget(self.betting_page)
+            self.table.setFocus()
+
+    def show_result(self):
+        if self.controller.result is not None and not self.controller.betting_locked:
+            self.body.setCurrentWidget(self.wheel_page)
+
+    def animate_result(self, result):
+        self.result_title.setText("Koło w ruchu…")
+        self.result_summary.setText("Runda zapisana. Czekamy na zatrzymanie koła.")
+        self.result_bets.clear()
+        self.body.setCurrentWidget(self.wheel_page)
+        self.wheel.start(result)
+
+    def reveal_result(self, result):
+        color = {"red": "CZERWONE", "black": "CZARNE", "green": "ZIELONE"}[result.pocket.color.value]
+        self.result_title.setText(f"WYNIK · {result.pocket.number} · {color}")
+        self.result_summary.setText(f"Stawka: {result.total_stake}$\n"
+                                    f"Wypłata: {result.total_payout}$\n"
+                                    f"Bilans rundy: {result.net_profit:+d}$")
+        self.result_bets.clear()
+        for entry in result.bet_results:
+            bet = entry.bet
+            selection = f" {bet.selection}" if bet.selection is not None else ""
+            outcome = "WYGRANY" if entry.won else "PRZEGRANY"
+            text = f"{outcome} · {bet.bet_type.name}{selection}\nStawka {bet.amount}$ · wypłata {entry.payout}$"
+            self.result_bets.addItem(text)
+            self.result_bets.item(self.result_bets.count() - 1).setToolTip(text)
+        self.next_button.setFocus()
 
     def eventFilter(self, watched, event):
         if (isinstance(watched, QPushButton) and watched.isEnabled() and
@@ -206,9 +284,21 @@ class GameView(QWidget):
     def refresh(self):
         controller = self.controller
         locked = controller.betting_locked
+        app = controller.application_controller
+        busy = app is not None and app.busy
+        self.spin_button.setEnabled(controller.can_spin)
+        self.next_button.setEnabled(not locked)
+        self.result_button.setEnabled(controller.result is not None and not locked)
+        self.retry_button.setVisible(controller.can_retry or (not busy and controller.session is not None and
+                                                             controller.session.has_pending_round))
+        self.retry_button.setEnabled(controller.can_retry)
+        self._text(self.message, controller.status_message or "Wybierz zakłady i naciśnij SPIN · Ctrl+Spacja.")
         for widget in (self.mode_combo, self.betting_controls, self.table, self.cart):
             widget.setEnabled(not locked)
         self.back_button.setEnabled(not locked)
+        self.remove_button.setEnabled(False)
+        if busy:
+            return
         with QSignalBlocker(self.mode_combo):
             self.mode_combo.setCurrentIndex(self.mode_combo.findData(controller.mode))
         classic = controller.mode == "CLASSIC"
@@ -225,6 +315,14 @@ class GameView(QWidget):
             self.remove_button.setEnabled(False)
             return
         game = controller.session.game
+        if self._session is not controller.session:
+            self._session = controller.session
+            self.wheel.reset()
+            self.result_bets.clear()
+            self.result_title.clear()
+            self.result_summary.clear()
+            self.body.setCurrentWidget(self.betting_page)
+        self.wheel.set_pockets(game.wheel.pockets)
         self.chip_picker.set_values(game.CHIP_VALUES)
         self.chip_picker.set_selected(controller.chip_value)
         for button in self.chip_picker.buttons.values():
@@ -257,5 +355,3 @@ class GameView(QWidget):
         draft = f"Liczby: {selection or 'zaznacz na stole'}\n" if controller.kind == BetType.STRAIGHT else ""
         self._text(self.draft_label, draft + cost)
         self.draft_label.setToolTip(", ".join(map(str, numbers)))
-        self._text(self.message, "Obstawianie zablokowane. Dokończ bieżącą operację." if locked else
-                   "SPIN: dostępny od Etapu 4. Możesz obstawiać i usuwać zakłady.")

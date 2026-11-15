@@ -3,26 +3,26 @@
 ## Stan i bramka akceptacji
 
 - Aktualizacja: 2026-11-15.
-- Aktualnie zaakceptowany ukończony etap: **Etap 2**, przez wiadomość `ZATWIERDZAM ETAP 2 — PRZEJDŹ DO ETAPU 3`.
-- Etap 3: **ukończony; oczekiwanie na akceptację wyniku**. Etapy 4–9 nierozpoczęte.
+- Aktualnie zaakceptowany ukończony etap: **Etap 3**, przez wiadomość `ZATWIERDZAM ETAP 3 — PRZEJDŹ DO ETAPU 4`.
+- Etap 4: **ukończony; oczekiwanie na akceptację wyniku**. Etapy 5–9 nierozpoczęte.
 - Po ręcznym sprawdzeniu użytkownik potwierdził działanie Etapu 3 i zlecił wyłącznie korektę zamykania GUI. Korekta opisana poniżej nie stanowi akceptacji Etapu 4.
 - Etap 0: ukończony i zaakceptowany.
 - Gałąź: `codex`; początkowy commit: `4ba0069f25eb652917a039f76c634fdd1d8d4072` (`Roulette MVP 3.0`). Początkowy status czysty, brak wcześniejszych zmian użytkownika.
 - Ostatni commit konfiguracji: `7c5bacfcebe0bf0af4fbbcc4d40d39e2a1e9de38` — `chore(gui): configure project agents` (13 plików: AGENTS i konfiguracja ról).
-- Ostatni commit poprzedniego etapu: `346996b` — dokumentacja i wyniki Etapu 2.
+- Ostatni commit poprzedniego etapu: `e88a5ed` — poprawka zamykania Etapu 3.
 - Ostatni commit implementacji Etapu 1: `69a187fd4395664903697f3ba23a7d13a008a1c3` — `feat(gui): bootstrap Qt and add baseline regressions`.
 - Ostatni commit implementacji Etapu 2: `99f2963cd7f82fbd8746b0bf3d94c578b473f110` — `feat(gui): add main window and player profiles`.
 - Ostatni commit implementacji Etapu 3: `e475c30ea7e0af58f324d6efddf26090bf11b52b` — `feat(gui): add graphical roulette betting table`.
 - Ostatni commit bieżącej dokumentacji: do ustalenia przez `git log -1 --format="%H %s" -- docs/GUI_PROGRESS.md`; SHA zostanie podany w raporcie czatu. Własnego SHA nie wpisujemy do treści tego samego commita.
-- Kontynuacja do Etapu 4 wyłącznie po: `ZATWIERDZAM ETAP 3 — PRZEJDŹ DO ETAPU 4`.
+- Kontynuacja do Etapu 5 wyłącznie po: `ZATWIERDZAM ETAP 4 — PRZEJDŹ DO ETAPU 5`.
 
 | Etap | Stan | Akceptacja |
 | --- | --- | --- |
 | 0 — Bootstrap i audyt | Ukończony | Udzielona |
 | 1 — Testy bazowe i architektura | Ukończony | Udzielona |
 | 2 — Główne okno i profile | Ukończony | Udzielona |
-| 3 — Stół i obstawianie | Ukończony | Oczekiwana po raporcie |
-| 4 — Koło i animacja | Nierozpoczęty | Brak |
+| 3 — Stół i obstawianie | Ukończony | Udzielona |
+| 4 — Koło i animacja | Ukończony | Oczekiwana po raporcie |
 | 5 — Statystyki | Nierozpoczęty | Brak |
 | 6 — Leaderboard | Nierozpoczęty | Brak |
 | 7 — Prestige Shop | Nierozpoczęty | Brak |
@@ -193,6 +193,17 @@ Commit implementacji: **`e475c30ea7e0af58f324d6efddf26090bf11b52b`**, `feat(gui)
 - Dokumenty: ten dziennik, `docs/GUI_MIGRATION_PLAN.md` (wyjątek zamknięcia po potwierdzeniu), `docs/GUI_MANUAL_CHECK.md` (instrukcja X/skróty/dialog). Nie zmieniano stołu, koła, TUI, zamrożonego silnika/usług/persystencji, zależności ani konfiguracji agentów. Robocza baza nie była otwierana; jej SHA-256 po kontroli jest porównywany z początkowym `FAF650B44BDB7BD37BD9639D3872F18A7AEAF5E4BA00C9EE72B7A3FA8D98FD29`.
 - Weryfikacja interakcji: Qt offscreen/QTest na tymczasowych bazach. Nie wykonano w tej korekcie ręcznego klikania natywnego X ani kontroli wszystkich DPI. Systemowe zamknięcie korzysta z badanego closeEvent. Nie uruchamiano seedera ani buildu EXE. SHA poprawki dostępny w `git log -1` i raporcie czatu; nie wpisujemy własnego SHA w treść commita.
 
+## Etap 4 — koło, animacja i rozliczenie rundy
+
+- Akceptacja: `ZATWIERDZAM ETAP 3 — PRZEJDŹ DO ETAPU 4`; start na czystym `codex`, HEAD `e88a5ed`. Limit użycia przerwał pracę agenta; po odnowieniu wznowiono tę samą rolę i rozpoczęte pliki. Etap 5 pozostaje nieautoryzowany.
+- Wykonawca **wheel_animator / wheel_stage4, GPT-6 Astra / medium**, model i effort potwierdzone narzędziem/TOML: `app/gui/widgets/roulette_wheel.py`, `app/gui/controllers/game_controller.py`, `app/gui/views/game.py`, `tests/gui/test_wheel.py`. Koordynator: integracja `app/gui/controllers/application_controller.py`, `app/gui/main_window.py`, dostosowanie `tests/gui/test_game_navigation.py`, dokumentacja i zrzut. Konfiguracja koordynatora nadal Sol/high; bez zamienników, dalszej delegacji i przekraczania limitu dwóch subagentów.
+- Koło QPainter: 37 pól z `wheel.pockets`, stały wskaźnik, pięć obrotów i zwalnianie OutCubic przez QVariantAnimation (około 4,2 s). Animacja używa tylko RoundResult. Trwałe strony stołu oraz koła/wyniku; panel pokazuje numer/kolor, każdy BetResult, stawkę, wypłatę i bilans netto z silnika. Obstawiaj dalej/Ostatni wynik przełączają strony, nowy profil czyści wynik.
+- SPIN/Ctrl+Spacja wywołuje `spin_and_save()` raz w dotychczasowym workerze ApplicationController. Błąd zapisu blokuje mutacje/wyjście; Ponów zapis/Ctrl+R wywołuje tylko `save_pending_round()` tej samej sesji. Animacja rozpoczyna się po zapisie; centralna flaga animacji ustawiana przed odblokowaniem I/O. Widok nie odczytuje Game podczas pracy workera, a animacja odświeża samo koło. Zachowano potwierdzenie anulowania zakładów przy zamykaniu i blokady I/O/animacji/pending.
+- **Testy celowane:** wykonawca **5 passed in 2.35s**: geometria wszystkich 37 pól w jednej pętli, dokładny wynik/stop animacji, prawdziwy zapis i rozliczenie w tymczasowej SQLite, blokady/double spin, retry tego samego obiektu bez reroll, responsywność przy oczekiwaniu I/O i reset profilu. Istniejące testy zamykania/nawigacji: **18 passed**, jeden wykrył czyszczenie komunikatu pending przez synchronizację statusu; po dodaniu fallbacku blocked_reason ten test **1 passed in 0.67s**. Bez pełnej regresji i serii obciążeniowych.
+- **Jeden zwięzły QA:** qa_reviewer / qa_stage3, **GPT-6 Astra / medium**, wyłącznie odczyt; **6 passed in 3.02s** (pięć nowych i poprawiony przypadek pending), bez awarii Qt i uwag P1/P2. Nie wykonywano kolejnej rundy audytu.
+- **Jeden natywny smoke Qt Windows**, tymczasowa baza, faulthandler: wynik 32, jeden spin, jeden zapis, saldo 1375$ dla stawki 85$, wypłaty 460$ i zysku 375$. Timer GUI: 144 ticki podczas animacji; zamknięcie w ruchu zablokowane, potem dostępny powrót do obstawiania i zwykłe zamknięcie. Obejrzano `docs/images/gui-stage4-result-900x650.png` oraz dodatkowy podgląd 740×560; koło i lista wyniku czytelne. QA także obejrzał zrzut 900×650. Awaria Qt nie powtórzyła się; nie deklarujemy usunięcia historycznej przyczyny ani kontroli wszystkich DPI.
+- Kontrole domykające: `git diff --check`, przegląd jawnego staged diffu, pusty diff silnika/usług/persystencji/TUI i niezmienione zależności. Hash roboczej bazy porównywany z początkowym `FAF650B44BDB7BD37BD9639D3872F18A7AEAF5E4BA00C9EE72B7A3FA8D98FD29`, bez otwierania SQLite. Instrukcja: `GUI_MANUAL_CHECK.md`. Bez buildu EXE i Etapu 5. SHA etapu dostępny w `git log -1` i raporcie czatu.
+
 ## Kluczowe decyzje i ograniczenia
 
 - `Game` jest jedynym źródłem zakładów, salda sesji i limitów; `RoundResult` źródłem rozliczenia i wyniku koła.
@@ -211,9 +222,9 @@ Commit implementacji: **`e475c30ea7e0af58f324d6efddf26090bf11b52b`**, `feat(gui)
 1. Otwórz ten sam projekt na `codex`; przeczytaj AGENTS, plan, dziennik i sprawdź status oraz HEAD. Nie klonuj repozytorium.
 2. Przy nowej sesji sprawdź dostępność nazwanych ról w natywnym narzędziu delegacji. W razie wątpliwości wykonaj krótki audyt do odczytu przez `architecture_auditor`; nie diagnozuj bieżącej sesji wyłącznie przez osobny CLI.
 3. Nie zmieniaj zaufania projektu, globalnych uprawnień ani sandboxa. Zachowaj model koordynatora GPT-6.1 Sol / High i limit 2 subagentów.
-4. Po ukończeniu Etapu 3 dalsza praca wymaga dokładnie `ZATWIERDZAM ETAP 3 — PRZEJDŹ DO ETAPU 4`. Sama działająca delegacja nie zatwierdza kolejnych etapów.
+4. Po ukończeniu Etapu 4 dalsza praca wymaga dokładnie `ZATWIERDZAM ETAP 4 — PRZEJDŹ DO ETAPU 5`. Sama działająca delegacja nie zatwierdza kolejnych etapów.
 5. Wykonać wyłącznie następny zaakceptowany etap, testy i kontrolę diffu, uzupełnić dziennik, commit i zatrzymać się.
 
 ## Następny etap — jeszcze nieautoryzowany
 
-Etap 4: graficzne koło z kolejnością i kolorami 37 pól z silnika, nieblokująca animacja do zwróconego RoundResult, pojedyncze spin_and_save(), retry tego samego wyniku oraz blokady i testy. Do wykonania dopiero po akceptacji Etapu 3. W Etapie 3 SPIN nie rozlicza rund.
+Etap 5: statystyki gracza z istniejącego StatsService oraz kolekcja odznak, puste stany i celowane testy prezentacji. Do wykonania dopiero po akceptacji Etapu 4.

@@ -23,6 +23,10 @@ class _Worker(QObject):
             elif action == "create":
                 created = self.players.add_player(argument)
                 result = self.session_factory(created.id)
+            elif action == "spin":
+                result = argument.spin_and_save()
+            elif action == "retry":
+                result = argument.save_pending_round()
             else:
                 result = self.session_factory(argument)
             self.finished.emit(action, result, None, created)
@@ -36,6 +40,7 @@ class ApplicationController(QObject):
     profiles_changed = Signal(object)
     error = Signal(str)
     shutdown_finished = Signal()
+    round_finished = Signal(object, object)
     _request = Signal(str, object)
     _stop = Signal()
 
@@ -80,7 +85,7 @@ class ApplicationController(QObject):
         return ""
 
     def _submit(self, action, value=None):
-        if self._closing or self.busy or (action != "load" and self.blocked()):
+        if self._closing or self.busy or (action not in ("load", "spin", "retry") and self.blocked()):
             return False
         self.busy = True
         self.busy_changed.emit(True)
@@ -105,9 +110,24 @@ class ApplicationController(QObject):
     def select_profile(self, player_id):
         return self._submit("select", player_id)
 
+    def submit_round(self, retry=False):
+        if self._closing or self.busy or self.animating or self.session is None:
+            return False
+        if retry:
+            if not self.session.has_pending_round:
+                return False
+        elif self.session.has_pending_round or not self.session.game.current_bets:
+            return False
+        return self._submit("retry" if retry else "spin", self.session)
+
     @Slot(str, object, object, object)
     def _finished(self, action, result, exc, created):
         self.busy = False
+        if action in ("spin", "retry"):
+            # Odbiorca ustawia blokadę animacji przed sygnałem końca I/O.
+            self.round_finished.emit(result, exc)
+            self.busy_changed.emit(False)
+            return
         self.busy_changed.emit(False)
         if exc is not None:
             if created is not None:

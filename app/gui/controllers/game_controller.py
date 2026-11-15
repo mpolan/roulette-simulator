@@ -8,6 +8,8 @@ from domain.bet import Bet, BetType
 class GameController(QObject):
     state_changed = Signal()
     error = Signal(str)
+    animation_requested = Signal(object)
+    round_revealed = Signal(object)
 
     def __init__(self, application_controller=None, parent=None):
         super().__init__(parent)
@@ -19,14 +21,32 @@ class GameController(QObject):
         self.group = 1
         self.amount_text = ""
         self.selected_numbers = set()
+        self.animating = False
+        self.result = None
+        self.status_message = ""
+        self._round_requested = False
         if application_controller is not None:
             application_controller.busy_changed.connect(self.refresh)
+            if hasattr(application_controller, "round_finished"):
+                application_controller.round_finished.connect(self._round_finished)
 
     @property
     def betting_locked(self):
-        return (self.session is None or self.session.has_pending_round or
+        return (self.session is None or self._round_requested or self.animating or
                 (self.application_controller is not None and
-                 self.application_controller.navigation_blocked()))
+                 self.application_controller.navigation_blocked()) or self.session.has_pending_round)
+
+    @property
+    def can_spin(self):
+        return (self.application_controller is not None and not self.betting_locked and
+                bool(self.session.game.current_bets))
+
+    @property
+    def can_retry(self):
+        app = self.application_controller
+        return (app is not None and self.session is not None and
+                not app.busy and not self.animating and not self._round_requested and
+                self.session.has_pending_round)
 
     def set_session(self, session):
         if session is not self.session:
@@ -36,10 +56,59 @@ class GameController(QObject):
             self.group = 1
             self.amount_text = ""
             self.selected_numbers.clear()
+            self.result = None
+            self.status_message = ""
             values = session.game.CHIP_VALUES if session is not None else ()
             if values and self.chip_value not in values:
                 self.chip_value = values[0]
         self.refresh()
+
+    def spin(self):
+        if not self.can_spin:
+            return False
+        return self._submit_round(False)
+
+    def retry_save(self):
+        if not self.can_retry:
+            return False
+        return self._submit_round(True)
+
+    def _submit_round(self, retry):
+        self._round_requested = True
+        self.status_message = "Ponawianie zapisu rundy…" if retry else "Rozliczanie i zapis rundy…"
+        if not self.application_controller.submit_round(retry=retry):
+            self._round_requested = False
+            self.status_message = ""
+            self.refresh()
+            return False
+        return True
+
+    def _round_finished(self, result, exc):
+        if not self._round_requested:
+            return
+        self._round_requested = False
+        if exc is not None:
+            self.status_message = (f"Nie udało się zapisać rundy: {exc}. Ponów zapis." if self.session.has_pending_round
+                                   else f"Nie udało się rozpocząć rundy: {exc}")
+            self.refresh()
+            self.error.emit(self.status_message)
+            return
+        self.result = result
+        self.selected_numbers.clear()
+        self.animating = True
+        self.application_controller.animating = True
+        self.status_message = "Koło w ruchu…"
+        self.refresh()
+        self.animation_requested.emit(result)
+
+    def animation_finished(self, result):
+        if not self.animating or result is not self.result:
+            return
+        self.animating = False
+        self.application_controller.animating = False
+        self.status_message = "Runda zakończona. Możesz obstawiać kolejną rundę."
+        self.refresh()
+        self.round_revealed.emit(result)
 
     def refresh(self, *_):
         self.state_changed.emit()
