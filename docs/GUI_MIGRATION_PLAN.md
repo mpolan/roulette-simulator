@@ -1,6 +1,6 @@
 # Obsidian Royale — plan migracji TUI → GUI
 
-Data audytu: 2026-11-15. Etapy 0–7 ukończone i zaakceptowane; aktualna jednostka pracy: **wyłącznie Etap 8**. Etap 9 wymaga kolejnej akceptacji.
+Data audytu: 2026-11-15. Etapy 0–8 ukończone i zaakceptowane; **Etap 9 ukończony, oczekiwanie na końcową akceptację**. Dalsze prace wymagają osobnego polecenia.
 
 ## 1. Stan wejściowy i granice
 

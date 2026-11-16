@@ -2,19 +2,19 @@
 
 ## Stan i bramka akceptacji
 
-- Aktualizacja: 2026-11-15.
-- Aktualnie zaakceptowany ukończony etap: **Etap 7**, przez wiadomość `ZATWIERDZAM ETAP 7 — PRZEJDŹ DO ETAPU 8`.
-- Etap 8: **ukończony; oczekiwanie na akceptację wyniku**. Etap 9 nierozpoczęty.
+- Aktualizacja: 2026-11-16.
+- Aktualnie zaakceptowany ukończony etap: **Etap 8**, przez wiadomość `ZATWIERDZAM ETAP 8 — PRZEJDŹ DO ETAPU 9`.
+- Etap 9: **ukończony; oczekiwanie na końcową akceptację wyniku**.
 - Po ręcznym sprawdzeniu użytkownik potwierdził działanie Etapu 3 i zlecił wyłącznie korektę zamykania GUI. Korekta opisana poniżej nie stanowi akceptacji Etapu 4.
 - Etap 0: ukończony i zaakceptowany.
 - Gałąź: `codex`; początkowy commit: `4ba0069f25eb652917a039f76c634fdd1d8d4072` (`Roulette MVP 3.0`). Początkowy status czysty, brak wcześniejszych zmian użytkownika.
 - Ostatni commit konfiguracji: `7c5bacfcebe0bf0af4fbbcc4d40d39e2a1e9de38` — `chore(gui): configure project agents` (13 plików: AGENTS i konfiguracja ról).
-- Ostatni commit poprzedniego etapu: `a7a1a6d` — Prestige Shop Etapu 7.
+- Ostatni commit poprzedniego etapu: `4298f96` — kolory wyników, korekta Etapu 8.
 - Ostatni commit implementacji Etapu 1: `69a187fd4395664903697f3ba23a7d13a008a1c3` — `feat(gui): bootstrap Qt and add baseline regressions`.
 - Ostatni commit implementacji Etapu 2: `99f2963cd7f82fbd8746b0bf3d94c578b473f110` — `feat(gui): add main window and player profiles`.
 - Ostatni commit implementacji Etapu 3: `e475c30ea7e0af58f324d6efddf26090bf11b52b` — `feat(gui): add graphical roulette betting table`.
 - Ostatni commit bieżącej dokumentacji: do ustalenia przez `git log -1 --format="%H %s" -- docs/GUI_PROGRESS.md`; SHA zostanie podany w raporcie czatu. Własnego SHA nie wpisujemy do treści tego samego commita.
-- Kontynuacja do Etapu 9 wyłącznie po: `ZATWIERDZAM ETAP 8 — PRZEJDŹ DO ETAPU 9`.
+- Migracja 0–9 zakończona. Bez merge/push i dodatkowych prac przed osobnym poleceniem użytkownika.
 
 | Etap | Stan | Akceptacja |
 | --- | --- | --- |
@@ -26,8 +26,8 @@
 | 5 — Statystyki | Ukończony | Udzielona |
 | 6 — Leaderboard | Ukończony | Udzielona |
 | 7 — Prestige Shop | Ukończony | Udzielona |
-| 8 — UX i wydajność | Ukończony | Oczekiwana po raporcie |
-| 9 — Testy i wydanie | Nierozpoczęty | Brak |
+| 8 — UX i wydajność | Ukończony | Udzielona |
+| 9 — Testy i wydanie | Ukończony | Oczekiwana po raporcie |
 
 ## Ustalenia Etapu 0
 
@@ -259,12 +259,12 @@ Commit implementacji: **`e475c30ea7e0af58f324d6efddf26090bf11b52b`**, `feat(gui)
 1. Otwórz ten sam projekt na `codex`; przeczytaj AGENTS, plan, dziennik i sprawdź status oraz HEAD. Nie klonuj repozytorium.
 2. Przy nowej sesji sprawdź dostępność nazwanych ról w natywnym narzędziu delegacji. W razie wątpliwości wykonaj krótki audyt do odczytu przez `architecture_auditor`; nie diagnozuj bieżącej sesji wyłącznie przez osobny CLI.
 3. Nie zmieniaj zaufania projektu, globalnych uprawnień ani sandboxa. Zachowaj model koordynatora GPT-6.1 Sol / High i limit 2 subagentów.
-4. Po ukończeniu Etapu 8 dalsza praca wymaga dokładnie `ZATWIERDZAM ETAP 8 — PRZEJDŹ DO ETAPU 9`. Sama działająca delegacja nie zatwierdza kolejnych etapów.
+4. Etap 9 jest ukończony; dalsza praca wymaga osobnego polecenia użytkownika. Sama działająca delegacja nie upoważnia do dodatkowych prac.
 5. Wykonać wyłącznie następny zaakceptowany etap, testy i kontrolę diffu, uzupełnić dziennik, commit i zatrzymać się.
 
-## Następny etap — jeszcze nieautoryzowany
+## Dalsze prace
 
-Etap 9: końcowa regresja, kontrola zgodności GUI/TUI i danych, dokumentacja użytkownika oraz świeży build GUI EXE. Do wykonania dopiero po akceptacji Etapu 8.
+Etapy migracji zakończone. Merge, push i dodatkowe prace wymagają osobnego polecenia.
 
 ## Korekta po ręcznym sprawdzeniu Etapu 8
 
@@ -277,3 +277,13 @@ Etap 9: końcowa regresja, kontrola zgodności GUI/TUI i danych, dokumentacja u�
 ### Kolory wyniku — 2026-11-16
 
 Na prośbę użytkownika grupy wygranych zakładów są zielone (#72F5BA), przegranych czerwone (#FF8E9B), zgodnie z paletą GUI. Etykiety tekstowe zachowano. Wyłącznie prezentacja w views/game.py; bez zmian silnika/TUI. Koordynator wykonał drobną poprawkę bez dodatkowej delegacji. Celowane testy grupowania z kontrolą kolorów: 2 passed in 0.23s. Przegląd diff/check bez uwag. Etap 9 nierozpoczęty.
+
+## Etap 9 — finalizacja i wydanie (2026-11-16)
+
+- Start na czystym codex, HEAD 4298f96; akceptacja Etapu 8 w załączonym poleceniu użytkownika. Wykonawcy: docs_writer / release_docs9 — GPT-6 Luna / low (README, instrukcja i wydanie); project_setup / architecture_final9 — GPT-6.1 Terra / low, tylko odczyt, jeden audyt architektury i celowana diagnoza DLL. Zastosowano ekonomiczną rolę do audytu zamiast Astry zgodnie z poleceniem użytkownika. Koordynator: regresja, build, kontrola EXE i Git. Bez dalszej delegacji.
+- **Jedna pełna regresja: 710 passed in 49.45s**, bez zawieszenia i natywnej awarii. Obejmuje silnik, bazę/zakupy/pending, wszystkie ekrany GUI i smoke oryginalnego Textual przez app/app.py. `pip check`: No broken requirements found. Brak nowych testów i powtarzania regresji.
+- Audyt do odczytu oraz porównanie z 4ba0069: domain/services/persistence i TUI identyczne. GUI jest prezentacją nad Game/GameSession, bez własnego RNG/SQL/resolvera. Przykłady częściowego odświeżania i oddzielenia animacji od losowania opisano w README.
+- Powtarzalny build: build-gui.ps1, ObsidianRoyaleGUI.spec, requirements-build-gui.txt; osobne dist/ObsidianRoyaleGUI.exe, bez konsoli, baz i danych demo. Stary build TUI i jego skrypty zachowano. Pierwszy EXE ujawnił konflikt obcej ICU z Popplera na PATH; diagnostyka ładowania DLL ustaliła przyczynę i spec wyklucza te pliki. Finalny EXE 48 630 117 bajtów, SHA-256 3C85965F3BDBE9238172457A411BE476C7DE27C38961CDB2966264BAE5CAC624.
+- **Natywny test finalnego EXE:** osobna kopia w ignorowanym build/gui-release-final-20261116, pusta baza utworzona przez istniejące init_db, profil Test wydania, żeton 25$, SPIN do 29/czarne, saldo975$, zapis jednej rundy, zamknięcie i ponowny start z zachowanym profilem. Drugi profil z saldem15000 dodano publicznym API wyłącznie w tej bazie do przygotowania kontroli sklepu. Końcowy zakup w EXE nie został wykonany; trwałość zakupów sprawdza regresja. Sterowanie klawiaturą i odczyt Windows UIA; przechwycenie obrazu zgłaszało timeout, więc nie deklarujemy pełnego natywnego audytu wizualnego ani próby na czystej maszynie. Test wymaganego EXE odbył się po naprawie, nie tylko uruchomienie źródeł.
+- Dokumenty: README.md, GUI_USER_GUIDE.md, GUI_RELEASE.md, ten dziennik i status planu. .gitignore sprawdzony: venv/cache/logi/tmp/bazy/build/dist ignorowane; brak potrzeby zmiany. Do commita nie wchodzą EXE, testowe bazy ani diagnostyczne pliki.
+- Kontrole końcowe: diff/check, jawny staged diff i kontrola zamrożonych katalogów. Hash roboczej bazy taki sam jak na początku etapu: D20CC4F2779670B968647A60EDDA31DED053A3FDC07A5700B04DBDC6E68077AA. Użytkownik otworzył swoją instancję źródłową w czasie prac; test wydania korzystał z osobnej kopii i nie zmienił jego danych. SHA końcowego commita w raporcie czatu. Bez merge/push i dalszych prac.
